@@ -21,3 +21,22 @@ PUBLIC void clock_handler(int irq)
 
 	schedule();
 }
+
+/**
+ *	init_clock
+ *	
+ *	<Ring 0> Initialize 8253/8254 PIT (Programmable Interval Timer).	
+ *
+ */
+PUBLIC void init_clock()
+{
+	// 初始化 8253 PIT
+	out_byte(TIMER_MODE, RATE_GENERATOR);
+	out_byte(TIMER0, (u8)(TIMER_FREQ/HZ));
+	out_byte(TIMER0, (u8)((TIMER_FREQ/HZ) >> 8));
+
+	// 设定时钟中断处理程序
+	put_irq_handler(CLOCK_IRQ, clock_handler);
+	// 让 8259A 可以接收时钟中断
+	enable_irq(CLOCK_IRQ);
+}
