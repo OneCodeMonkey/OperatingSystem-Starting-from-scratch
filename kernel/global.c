@@ -23,3 +23,12 @@ PUBLIC struct task task_table[NR_TASKS] = {
 	{task_fs,		STACK_SIZE_FS,	"FS"		},
 	{task_mm,		STACK_SIZE_MM,	"MM"		}
 };
+
+PUBLIC struct task user_proc_table[NR_NATIVE_PROCS] = {
+	/* entry	stack_size 		proc_name */
+	/* -----	----------		--------- */
+	{Init,		STACK_SIZE_INIT,	"INIT"},
+	{TestA,		STACK_SIZE_TESTA,	"TestA"},
+	{TestB,		STACK_SIZE_TESTB,	"TestB"},
+	{TestC,		STACK_SIZE_TESTC,	"TestC"}
+};
