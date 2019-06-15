@@ -131,3 +131,35 @@ PRIVATE void clear_screen(int pos, int len)
 		*pch++ = DEFAULT_CHAR_COLOR;
 	}
 }
+
+/**
+ *	is_current_console
+ *
+ *	Uses `nr_current_console` to determine if a console is the current one.
+ *
+ *  @param con: ptr to console
+ *
+ *	@return TRUE if con is the current console.
+ */
+PUBLIC int is_current_console(CONSOLE* con)
+{
+	return (con == &console_table[current_console]);
+}
+
+/**
+ * 	set_cursor
+ *
+ *	Display the cursor by setting CRTC(6845 compatible) registers.
+ *	
+ *	@param position: Position of the cursor based on the beginning of the video memory.
+ *	Note that it counts in WORDs, not in BYTEs.
+ */
+PRIVATE void set_cursor(unsigned int position)
+{
+	disable_init();
+	out_byte(CRTC_ADD_REG, CURSOR_H);
+	out_byte(CRTC_DATA_REG, (position >> 8) & 0xFF);
+	out_byte(CRTC_ADDR_REG, CURSOR_L);
+	out_byte(CRTC_DATA_REG, position & 0xFF);
+	enable_init();
+}
