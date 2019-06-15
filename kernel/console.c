@@ -275,3 +275,19 @@ PRIVATE void flush(CONSOLE* con)
 	}
 #endif
 }
+
+/**
+ * 	w_copy
+ *	
+ *	Copy data in WORDS.
+ *	Note that the addresses of dst and src are not pointers, but integers,
+ *	`coz` in most cases are pass integers into it as parameters.
+ *
+ *	@param dst: Addr of destination
+ *	@param src:	Addr of source.
+ *	@param size: How many words will be copied.
+ */
+PRIVATE void w_copy(unsigned int dst, const unsigned int src, int size)
+{
+	phys_copy((void*)(V_MEM_BASE + (dst << 1)), (void*)(V_MEM_BASE + (src << 1)), size << 1);
+}
