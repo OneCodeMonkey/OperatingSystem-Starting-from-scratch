@@ -23,6 +23,25 @@ PUBLIC void clock_handler(int irq)
 }
 
 /**
+ *	milli_delay
+ *	
+ *	<Ring 1-3> Delay for a specified amount of time.
+ *
+ *	@param milli_sec How many milliseconds to delay.
+ *
+ */
+PUBLIC void milli_delay(int milli_sec)
+{
+	int t = get_ticks();
+
+	while(((get_ticks() - t) * 1000 / HZ) < milli_sec)
+	{
+		//
+	}
+}
+
+
+/**
  *	init_clock
  *	
  *	<Ring 0> Initialize 8253/8254 PIT (Programmable Interval Timer).	
