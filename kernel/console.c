@@ -114,3 +114,20 @@ PUBLIC void out_char(CONSOLE* con, char ch)
 
 	flush(con);
 }	
+
+/**
+ *	clear_screen
+ *
+ * 	Write whitespaces to the screen.
+ *
+ * 	@param pos: Write from here.
+ *	@param len: How many whitespaces will be written.
+ */
+PRIVATE void clear_screen(int pos, int len)
+{
+	u8 * pch = (u8*)(V_MEM_BASE + pos * 2);
+	while(--len >= 0) {
+		*pch++ = ' ';
+		*pch++ = DEFAULT_CHAR_COLOR;
+	}
+}
