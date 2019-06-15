@@ -61,3 +61,9 @@ struct dev_drv_map dd_map[] = {
 	{TASK_TTY},			// <4: TTY
 	{INVALID_DRIVER},	// <5: Reserved for scsi disk driver
 };
+
+/**
+ *	7MB-8MB: buffer for MM
+ */
+PUBLIC u8 * 	mmbuf 	= (u8*)0x700000;
+PUBLIC const int 	MMBUF_SIZE = 0x100000;
