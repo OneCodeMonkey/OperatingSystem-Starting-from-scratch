@@ -193,3 +193,59 @@ PUBLIC void select_console(int nr_console)
 		return;
 	flush(&console_table[current_console = nr_console]);
 }
+
+/**
+ * 	scroll_screen
+ *
+ *	Scroll the screen.
+ *	Note that scrolling UP means the content of the screen will go upwards,
+ *	so that the user can see lines below the bottom. Similarly scrolling DOWN means the content of the screen will go downwards so that the user can see lines above the top.
+ *	When there is no line below the bottom of the screen, scrolling UP takes no effects; when there is no line above the top of the screen, scrolling DOWN takes no effects.
+ *
+ *	@param con: The console whose screen is to be scrolled.
+ *	@param dir: SCR_UP: scrolling the screen upwards.
+ *				SCR_DN:	scrolling the screen downwards.
+ */
+PUBLIC void scroll_screen(CONSOLE* con, int dir)
+{
+	// variables below are all in-console-offsets(based on con->orig)
+	// addr of the oldest available line in the console
+	int oldest;
+	// latest available line
+	int newest;
+	// position of the top of current screen
+	int scr_top;
+
+	newest = (con->cursor - con->orig) / SCR_WIDTH * SCR_WIDTH;
+	oldest = con->is_full ? (newest + SCR_WIDTH) % con->con_size : 0;
+	scr_top = con->crtc_start - con->orig;
+
+	if(dir == SCR_DN) {
+		if(!con->is_full && scr_top > 0)
+			con->crtc_start -= SCR_WIDTH;
+		else if(con->is_full && scr_top != oldest) {
+			if(con->cursor - con->orig >= con->con_size - SCR_SIZE) {
+				if(con->crtc_start != con->orig)
+					con->crtc_start -= SCR_WIDTH;
+			}
+			else if(con->crtc_start == con->orig) {
+				scr_top = con->con_size - SCR_SIZE;
+				con->crtc_start = con->orig + scr_top;
+			} else {
+				con->crtc_start -= SCR_WIDTH;
+			}
+		}
+	} else if(dir == SCR_UP) {
+		if(!con->is_full && newest >= scr_top + SCR_SIZE) {
+			con->crtc_start += SCR_WIDTH;
+		} else if(con->is_full && scr_top + SCR_SIZE - SCR_WIDTH != newest) {
+			if(scr_top + SCR_SIZE == con->con_size)
+				con->crtc_start = con->orig;
+			else
+				con->crtc_start += SCR_WIDTH;
+		}
+	} else {
+		assert(dir == SCR_DN || dir == SCR_UP);
+	}
+	flush(con);
+}
