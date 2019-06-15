@@ -161,5 +161,21 @@ PRIVATE void set_cursor(unsigned int position)
 	out_byte(CRTC_DATA_REG, (position >> 8) & 0xFF);
 	out_byte(CRTC_ADDR_REG, CURSOR_L);
 	out_byte(CRTC_DATA_REG, position & 0xFF);
-	enable_init();
+	enable_int();
+}
+
+/**
+ * 	set_video_start_addr
+ *
+ *	routine for hardware screen scrolling.
+ * 	@param add: Offset in the video memory.
+ */
+PRIVATE void set_video_start_addr(u32 addr)
+{
+	disable_init();
+	out_byte(CRTC_ADDR_REG, START_ADDR_H);
+	out_byte(CRTC_DATA_REG, (addr >> 8) & 0xFF);
+	out_byte(CRTC_ADDR_REG, START_ADDR_L);
+	out_byte(CRTC_DATA_REG, addr & 0xFF);
+	enable_int();
 }
