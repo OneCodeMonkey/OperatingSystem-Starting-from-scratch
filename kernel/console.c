@@ -53,3 +53,64 @@ PUBLIC void init_screen(TTY* tty)
 	}
 	set_cursor(tty->console->cursor);
 }
+
+/**
+ *	out_char
+ *
+ *	Print a char in a certain console.
+ *
+ *	@param con: The console to which the char is printed.
+ *	@param ch: The char to print.
+ */
+PUBLIC void out_char(CONSOLE* con, char ch)
+{
+	u8* pch = (u8*)(V_MEM_BASE + con->cursor * 2);
+
+	assert(con->cursor - con->orig < con->con_size);
+
+	// calculate the coordinate of cursor in current console( not in current screen)
+	int cursor_x = (con->cursor - con->orig) % SCR_WIDTH;
+	int cursor_y = (con->cursor - con->orig) / SCR_WIDTH;
+
+	switch(ch) {
+		case '\n':
+			con->cursor = con->orig + SCR_WIDTH * (cursor_y + 1);
+			break;
+		case '\b':
+			if(con->cursor > con->orig) {
+				con->cursor--;
+				*(pch - 2) = ' ';
+				*(pch - 1) = DEFAULT_CHAR_COLOR;
+			}
+			break;
+		default:
+			*pch++ = ch;
+			*pch++ = DEFAULT_CHAR_COLOR;
+			con->cursor++;
+			break;
+	}
+
+	if(con->cursor - con->orig >= con->con_size) {
+		cursor_x = (con->cursor - con->orig) % SCR_WIDTH;
+		cursor_y = (con->cursor - con->orig) / SCR_WIDTH;
+		int cp_orig = con->orig + (cursor_y + 1) * SCR_WIDTH - SCR_SIZE;
+		w_copy(con->orig, cp_orig, SCR_SIZE - SCR_WIDTH);
+		con->crtc_start = con->orig;
+		con->cursor = con->orig + (SCR_SIZE - SCR_WIDTH) + cursor_x;
+
+		clear_screen(con->cursor, SCR_WIDTH);
+
+		if(!con->is_full)
+			con->is_full = 1;
+	}
+
+	assert(con->cursor - con->orig < con->con_size);
+
+	while(con->cursor >= con->crtc_start + SCR_SIZE || con->cursor < con->crtc_start) {
+		scroll_screen(con, SCR_UP);
+
+		clear_screen(con->cursor, SCR_WIDTH);
+	}
+
+	flush(con);
+}	
