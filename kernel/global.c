@@ -32,3 +32,13 @@ PUBLIC struct task user_proc_table[NR_NATIVE_PROCS] = {
 	{TestB,		STACK_SIZE_TESTB,	"TestB"},
 	{TestC,		STACK_SIZE_TESTC,	"TestC"}
 };
+
+PUBLIC char		task_stack[STACK_SIZE_TOTAL];
+
+PUBLIC TTY 		tty_table[NR_CONSOLES];
+
+PUBLIC CONSOLE 	console_table[NR_CONSOLES];
+
+PUBLIC irq_handler	irq_table[NR_IRQ];
+
+PUBLIC system_call 	sys_call_table[NR_SYS_CALL]	= {sys_printx, sys_sendrec};
