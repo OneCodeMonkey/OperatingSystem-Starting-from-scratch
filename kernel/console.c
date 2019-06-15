@@ -179,3 +179,17 @@ PRIVATE void set_video_start_addr(u32 addr)
 	out_byte(CRTC_DATA_REG, addr & 0xFF);
 	enable_int();
 }
+
+/**
+ * 	select_console
+ *	
+ *	Select a console as the current.
+ *	
+ *	@param nr_console: Console nr, range in [0, NR_CONSOLES - 1].
+ */
+PUBLIC void select_console(int nr_console)
+{
+	if((nr_console < 0) || (nr_console >= NR_CONSOLES))
+		return;
+	flush(&console_table[current_console = nr_console]);
+}
