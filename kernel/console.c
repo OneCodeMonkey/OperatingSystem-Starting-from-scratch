@@ -249,3 +249,29 @@ PUBLIC void scroll_screen(CONSOLE* con, int dir)
 	}
 	flush(con);
 }
+
+/**
+ * 	flush
+ *
+ * 	Set the cursor and starting address of a console by writing the CRT Controller registers.
+ *
+ * 	@param con: The console to be set.
+ */
+PRIVATE void flush(CONSOLE* con)
+{
+	if(is_current_console(con)) {
+		set_cursor(con->cursor);
+		set_video_start_addr(con->crtc_start);
+	}
+
+#ifdef __TTY_DEBUG__
+	int lineno = 0;
+	for(lineno = 0; lineno < con->con_size / SCR_WIDTH; lineno++) {
+		u8 * pch = (u8*)(V_MEM_BASE + (con->orig + (lineno + 1) * SCR_WIDTH) * 2 - 4);
+		*pch++ = lineno / 10 + '0';
+		*pch++ = RED_CHAR;
+		*pch++ = lineno % 10 + '0';
+		*pch++ = RED_CHAR; 
+	}
+#endif
+}
