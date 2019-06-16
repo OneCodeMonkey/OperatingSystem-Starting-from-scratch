@@ -122,3 +122,57 @@ PRIVATE void hd_open(int device)
 		partition(drive * (NR_PART_PER_DRIVE + 1), P_PRIMARY);
 	}
 }
+
+/**
+ * hd_close
+ *
+ * <Ring 1> This routine handles DEV_READ and DEV_WRITE message.
+ *
+ * @param p: Message ptr.
+ */
+PRIVATE void hd_rdwt(MESSAGE * p)
+{
+	int drive = DRV_OF_DEV(p->DEVICE);
+
+	u64 pos = p->POSITION;
+
+	assert((pos >> SECTOR_SIZE_SHIFT) < (1 << 31));
+
+	// we only allow to R/W from a SECTOR boundary.
+	assert((pos & 0x1FF) == 0);
+
+	// pos / SECTOR_SIZE
+	u32 sect_nr = (u32)(pos >> SECTOR_SIZE_SHIFT);
+	int logidx = (p->DEVICE - MINOR_hd1a) % NR_SUB_PER_DRIVE;
+	sect_nr += p->DEVICE < MAX_PRIM ? hd_info[drive].primary[p->DEVICE].base : hd_info[drive].logical[logidx].base;
+
+	struct hd_cmd cmd;
+	cmd.features = 0;
+	cmd.count = (p->CNT + SECTOR_SIZE - 1)/SECTOR_SIZE;
+	cmd.lba_low = sect_nr & 0xFF;
+	cmd.lba_mid = (sect_nr >> 8) & 0xFF;
+	cmd.lba_high = (sect_nr >> 16) & 0xFF;
+	cmd.device = MAKE_DEVICE_REG(1, drive, (sect_nr >> 24)& 0xF);
+	cmd.command = (p->type == DEV_READ) ? ATA_READ : ATA_WRITE;
+	hd_cmd_out(&cmd);
+
+	int bytes_left = p->CNT;
+	void * la = (void*)va2la(p->PROC_NR, p->BUF);
+
+	while(bytes_left) {
+		int bytes = min(SECTOR_SIZE, bytes_left);
+		if(p->type == DEV_READ) {
+			interrupt_wait();
+			port_read(REG_DATA, hdbuf, SECTOR_SIZE);
+			phys_copy(la, (void*)va2la(TASK_HD, hdbuf), bytes);
+		} else {
+			if(!waitfor(STATUS_DRQ, STATUS_DRQ, HD_TIMEOUT))
+				panic("hd writing error");
+			port_write(REG_DATA, la, bytes);
+
+			interrupt_wait();
+		}
+		bytes_left -= SECTOR_SIZE;
+		la += SECTOR_SIZE;
+	}
+}
