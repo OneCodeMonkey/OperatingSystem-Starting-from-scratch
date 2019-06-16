@@ -75,3 +75,27 @@ PUBLIC void task_hd()
 		send_rect(SEND, src, &msg);
 	}
 }
+
+/**
+ * init_hd
+ *
+ * <Ring 1> Check hard drive, set IRQ handler, enable IRQ and initialize data
+ *
+ */
+PRIVATE void init_hd()
+{
+	int i;
+
+	// get the number of drivers from the BIOS data area
+	u8 * pNrDrives = (u8*)(0x475);
+	printl("{HD} pNrDrives:%d.\n", *pNrDrives);
+	assert(*pNrDrives);
+
+	put_irq_handler(AT_WINI_IRQ, hd_handler);
+	enable_irq(CASCADE_IRQ);
+	enable_irq(AT_WINI_IRQ);
+
+	for(i = 0; i < (sizeof(hd_info)/sizeof(hd_info[0])); i++)
+		memset(&hd_info[i], 0, sizeof(hd_info[0]));
+	hd_info[0].open_cnt = 0;
+}
