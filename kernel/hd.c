@@ -355,3 +355,33 @@ PRIVATE void print_identify_info(u16* hdinfo)
 	int sectors = ((int)hdinfo[61] << 16) + hdinfo[60];
 	printl("{HD} HD size: %dMB\n", sectors * 512 / 1000000);
 }
+
+/**
+ * hd_cmd_out
+ *
+ * <Ring 1> Output a command to HD controller.
+ *
+ * @param cmd: The command struct ptr.
+ *
+ */
+PRIVATE void hd_cmd_out(struct hd_cmd* cmd)
+{
+	/** 
+	 * For all commands, the host must first check if BSY=1,
+	 * and should proceed no further unless and until BSY=0.
+	 */
+	if(!waitfor(STATUS_BSY, 0, HD_TIMEOUT))
+		panic("hd error");
+
+	// Activate the interrupt enable (nIEN) bit
+	out_byte(REG_DEC_CTRL, 0);
+	// load required parameters in the command block registers.
+	out_byte(REG_FEATURES, cmd->features);
+	out_byte(REG_NSECTOR, cmd->count);
+	out_byte(REG_LBA_LOW, cmd->lba_low);
+	out_byte(REG_LBA_MID, cmd->lba_mid);
+	out_byte(REG_LAB_HIGH, cmd->lba_high);
+	out_byte(REG_DEVICE, cmd->device);
+	// write the command code to the command register
+	out_byte(REG_CMD, cmd->command);
+}
