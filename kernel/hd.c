@@ -397,3 +397,23 @@ PRIVATE void interrupt_wait()
 	MESSAGE msg;
 	send_recv(RECEIVE, INTERRUPT, &msg);
 }
+
+/**
+ * waitfor
+ *
+ * <Ring 1> Wait for a certain status.
+ *
+ * @param mask: Status mask.
+ * @param val: Required status
+ * @param timeout: Timeout in milliseconds
+ * @return 1 if success, 0 if timeout.
+ *
+ */
+PRIVATE int waitfor(int mask, int val, int timeout)
+{
+	int t = get_ticks();
+	while(((get_ticks() - t) * 1000 / HZ) < timeout)
+		if((in_byte(REG_STATUS) & mask) == val)
+			return 1;
+	return 0;
+}
