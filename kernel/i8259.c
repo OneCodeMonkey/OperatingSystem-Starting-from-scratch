@@ -39,3 +39,11 @@ PUBLIC void init_8259A()
 		irq_table[i] = spurious_irq;
 	}
 }
+
+// spurious_irq
+PUBLIC void spurious_irq(int irq)
+{
+	disp_str("spurious_irq: ");
+	disp_str(irq);
+	disp_str("\n");
+}
