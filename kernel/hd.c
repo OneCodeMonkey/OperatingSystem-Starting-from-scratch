@@ -417,3 +417,22 @@ PRIVATE int waitfor(int mask, int val, int timeout)
 			return 1;
 	return 0;
 }
+
+/**
+ * hd_handler
+ *
+ * <Ring 0> Interrupt handler.
+ *
+ * @param irq: IRQ nr of the disk interrupt.
+ *
+ */
+PUBLIC void hd_handler(int irq)
+{
+	/**
+	 * Interrupts are cleared when the host reads the Status Register,
+	 * issues a reset, or writes to the Command Register.
+	 */
+	hd_status = in_byte(REG_STATUS);
+
+	inform_int(TASK_HD);
+}
