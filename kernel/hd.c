@@ -176,3 +176,28 @@ PRIVATE void hd_rdwt(MESSAGE * p)
 		la += SECTOR_SIZE;
 	}
 }
+
+/**
+ * hd_ioctl
+ *
+ * <Ring 1> This routine handles the DEV_IOCTL message.
+ *
+ * @param p: Ptr to the MESSAGE
+ */
+PRIVATE void hd_ioctl(MESSAGE * p)
+{
+	int device = p->DEVICE;
+
+	int drive = DRV_OF_DEV(device);
+
+	struct hd_info * hdi = &hd_info[drive];
+
+	if(p->REQUEST == DIOCTL_GET_GEO) {
+		void * dst = va2la(p->PROC_NR, p->BUF);
+		void * src = va2la(TASK_HD, device < MAX_PRIM ? &hdi->primary[device] : &hdi->logical[(device - MINOR_hd1a)%NR_SUB_PER_DRIVE]);
+
+		phys_copy(dst, src, sizeof(struct part_info));
+	} else {
+		assert(0);	// fail
+	}
+}
