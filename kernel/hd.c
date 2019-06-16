@@ -201,3 +201,30 @@ PRIVATE void hd_ioctl(MESSAGE * p)
 		assert(0);	// fail
 	}
 }
+
+/**
+ * get_part_table
+ *
+ * <Ring 1> Get a partition table of a drive.
+ *
+ * @param drive: Drive nr(0 for the 1st disk, 1 for the 2nd, ...n for the n-th disk
+ * @param sect_nr: The sector at which the partition table is located.
+ * @param entry: Ptr to part_ent struct.
+ *
+ */
+PRIVATE void get_part_table(int drive, int sect_nr, struct part_ent * entry)
+{
+	struct hd_cmd cmd;
+	cmd.features = 0;
+	cmd.count = 1;
+	cmd.lba_low = sect_nr & 0xFF;
+	cmd.lba_mid = (sect_nr >> 8) & 0xFF;
+	cmd.lba_high = (sect_nr >> 16) & 0xFF;
+	cmd.device = MAKE_DEVICE_REG(1, drive, (sect_nr >> 24)& 0xF);
+	cmd.command = ATA_READ;
+	hd_cmd_out(&cmd);
+	interrupt_wait();
+
+	port_read(REG_DATA, hdbuf, SECTOR_SIZE);
+	memcpy(entry, hdbuf + PARTITION_TABLE_OFFSET, sizeof(struct part_ent) * NR_PART_PER_DRIVE);
+}
