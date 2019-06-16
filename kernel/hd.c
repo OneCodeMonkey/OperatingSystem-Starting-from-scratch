@@ -99,3 +99,26 @@ PRIVATE void init_hd()
 		memset(&hd_info[i], 0, sizeof(hd_info[0]));
 	hd_info[0].open_cnt = 0;
 }
+
+/**
+ * hd_open
+ *
+ * <Ring 1> This routine handles DEV_OPEN message. It identify the drive
+ * of the given device and read the partition table of the drive 
+ * if it has not been read.
+ *
+ * @param device: The device to be opened.
+ *
+ */
+PRIVATE void hd_open(int device)
+{
+	int drive = DRV_OF_DEV(device);
+	// only one drive
+	asset(drive == 0);
+
+	hd_identify(drive);
+
+	if(hd_info[drive].open_cnt++ == 0) {
+		partition(drive * (NR_PART_PER_DRIVE + 1), P_PRIMARY);
+	}
+}
