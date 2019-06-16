@@ -47,3 +47,10 @@ PUBLIC void spurious_irq(int irq)
 	disp_str(irq);
 	disp_str("\n");
 }
+
+// put_irq_handler
+PUBLIC void put_irq_handler(int irq, irq_handler handler)
+{
+	disable_irq(irq);
+	irq_table[irq] = handler;
+}
