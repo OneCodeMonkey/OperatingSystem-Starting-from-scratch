@@ -318,3 +318,40 @@ PRIVATE void hd_identify(int drive)
 	// Total Nr of User Addressable Sectors.
 	hd_info[drive].primary[0].size = ((int)hdinfo[61] << 16) + hdinfo[60];
 }
+
+/**
+ * print_identify_info
+ *
+ * <Ring 1> Print the hdinfo retrieved via ATA_IDENTIFY command.
+ *
+ * @param hdinfo: The buffer read from the disk i/o port.
+ */
+PRIVATE void print_identify_info(u16* hdinfo)
+{
+	int i, k;
+	char s[64];
+
+	struct iden_info_ascii{
+		int idx;
+		int len;
+		char* desc;
+	}iinfo[] = {{10, 20, "HD SN"}, {27, 40, "HD Model"}};
+
+	for(k = 0; k < sizeof(iinfo)/sizeof(iinfo[0]); k++) {
+		char* p = (char*)&hdinfo[iinfo[k].idx];
+
+		for(i = 0; i < iinfo[k].len/2; i++) {
+			s[i * 2 + 1] = *p++;
+			s[i * 2] = *p++;
+		}
+
+		s[i * 2] = 0;
+		printl("{HD} %s: %s\n", iinfo[k].desc, s);
+	}
+
+	int capabilities = hdinfo[49];
+	printl("{HD} LBA supported: %s\n", (capabilities & 0x0200) ? "YES" : "NO");
+
+	int sectors = ((int)hdinfo[61] << 16) + hdinfo[60];
+	printl("{HD} HD size: %dMB\n", sectors * 512 / 1000000);
+}
