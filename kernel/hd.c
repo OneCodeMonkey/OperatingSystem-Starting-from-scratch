@@ -385,3 +385,15 @@ PRIVATE void hd_cmd_out(struct hd_cmd* cmd)
 	// write the command code to the command register
 	out_byte(REG_CMD, cmd->command);
 }
+
+/**
+ * interrupt_wait
+ *
+ * <Ring 1> Wait until a disk interrupt occurs.
+ *
+ */
+PRIVATE void interrupt_wait()
+{
+	MESSAGE msg;
+	send_recv(RECEIVE, INTERRUPT, &msg);
+}
