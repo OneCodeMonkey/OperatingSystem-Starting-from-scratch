@@ -290,3 +290,31 @@ PRIVATE void partition(int device, int style)
 		assert(0); // partition failed
 	}
 }
+
+/**
+ * hd_identify
+ *
+ * <Ring 1> Get the disk information
+ *
+ * @param drive: Drive Nr.
+ *
+ */
+PRIVATE void hd_identify(int drive)
+{
+	struct hd_cmd cmd;
+	cmd.device = MAKE_DEVICE_REG(0, drive, 0);
+	cmd.command = ATA_IDENTIFY;
+
+	hd_cmd_out(&cmd);
+
+	interrupt_wait();
+
+	port_read(REG_DATA, hdbuf, SECTOR_SIZE);
+	print_identify_info((u16*)hdbuf);
+
+	u16* hdinfo = (u16*)hdbuf;
+
+	hd_info[drive].primary[0].base = 0;
+	// Total Nr of User Addressable Sectors.
+	hd_info[drive].primary[0].size = ((int)hdinfo[61] << 16) + hdinfo[60];
+}
