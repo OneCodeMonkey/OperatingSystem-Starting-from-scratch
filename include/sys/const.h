@@ -132,3 +132,8 @@
 
 // system call
 #define NR_SYS_CALL 3
+
+// ipc
+#define SEND 1
+#define RECEIVE 2
+#define BOTH 3	// BOTH = (SEND | RECEIVE)
