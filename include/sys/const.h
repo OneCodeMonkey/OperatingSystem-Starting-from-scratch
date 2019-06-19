@@ -137,3 +137,35 @@
 #define SEND 1
 #define RECEIVE 2
 #define BOTH 3	// BOTH = (SEND | RECEIVE)
+
+// magic chars used by 'printx'
+#define MAG_CH_PANIC '\002'
+#define MAG_CH_ASSERT '\003'
+
+/**
+ * @enum msgtype
+ * @brief MESSAGE types
+ */
+enum msgtype{
+	// when hardware interrupt occurs, a msg(with type == HRAD_INT) will be sent
+	// to some tasks
+	HARD_INT = 1,
+	// SYS task
+	GET_TICKS, GET_PID, GET_RTC_TIME,
+	// FS
+	OPEN, CLOSE, READ, WRITE, LSEEK, STAT, UNLINK,
+	// FS,TTY
+	SUSPEND_PROC, RESUME_PROC,
+	// MM
+	EXEC, WAIT,
+	// FS,MM
+	FORK, EXIT,
+	// TTY, SYS, FS, MM, etc
+	SYSCALL_RET,
+	// message type for drivers
+	DEV_OPEN = 1001,
+	DEV_CLOSE,
+	DEV_READ,
+	DEV_WRITE,
+	DEV_IOCTL
+};
