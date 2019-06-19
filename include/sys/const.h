@@ -130,4 +130,5 @@
 
 #define MAX_TICKS 0x7FFFABCD
 
-
+// system call
+#define NR_SYS_CALL 3
