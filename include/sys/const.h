@@ -169,3 +169,23 @@ enum msgtype{
 	DEV_WRITE,
 	DEV_IOCTL
 };
+
+// macros for messages
+#define FD u.m3.m3i1
+#define PATHNAME u.m3.m3p1
+#define FLAGS u.m3.m3i1
+#define NAME_LEN u.m3.m3i2
+#define BUF_LEN u.m3.m3i3
+#define CNT u.m3.m3i2
+#define REQUEST u.m3.m3i2
+#define PROC_NR u.m3.m3i3
+#define DEVICE u.m3.m3i4
+#define POSITION u.m3.m3l1
+#define BUF u.m3.m3p2
+#define OFFSET u.m3.m3i2
+#define WHENCE u.m3.m3i3
+
+#define PID u.m3.m3i2
+#define RETVAL u.m3.m3i1
+#define STATUS u.m3.m3i1
+
