@@ -115,4 +115,19 @@
 #define PRINTER_IRQ 7
 #define AT_WINI_IRQ 14	// at winchester
 
+// task
+// 注意 TASK_XXX 定义要与 global.c 中的对应
+#define INVALID_DRIVER -20
+#define INTERRUPT -10
+#define TASK_TTY 0
+#define TASK_SYS 1
+#define TASK_HD 2
+#define TASK_FS 3
+#define TASK_MM 4
+#define INIT 5
+#define ANY (NR_TASKS + NR_PROCS + 10)
+#define NO_TASK (NR_TASKS + NR_PROCS + 20)
+
+#define MAX_TICKS 0x7FFFABCD
+
 
