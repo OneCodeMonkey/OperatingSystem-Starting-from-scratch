@@ -360,3 +360,18 @@ PRIVATE void kb_wait()
 		kb_stat = in_byte(KB_CMD);
 	}while(kb_stat & 0x02);
 }
+
+/**
+ * kb_ack
+ * 
+ * Read from the keyboard controller until a KB_ACK is received.
+ *
+ */
+PRIVATE void kb_ack()
+{
+	u8 kb_read;
+
+	do{
+		kb_read = in_byte(KB_DATA);
+	}while(kb_read != KB_ACK);
+}
