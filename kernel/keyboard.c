@@ -345,3 +345,18 @@ PRIVATE u8 get_byte_from_kb_buf()
 
 	return scan_code;
 }
+
+/**
+ * kb_wait
+ *
+ * Wait Until the input buffer of 8042 is empty.
+ *
+ */
+PRIVATE void kb_wait()
+{
+	u8 kb_stat;
+
+	do{
+		kb_stat = in_byte(KB_CMD);
+	}while(kb_stat & 0x02);
+}
