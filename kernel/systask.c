@@ -82,3 +82,19 @@ PRIVATE u32 get_rtc_time(struct time *t)
 
 	return 0;
 }
+
+/**
+ * read_register
+ *
+ * Read register from CMOS.
+ *
+ * @param reg_addr
+ * @return io
+ *
+ */
+PRIVATE int read_register(char reg_addr)
+{
+	out_byte(CLK_ELE, reg_addr);
+
+	return in_byte(CLK_IO);
+}
