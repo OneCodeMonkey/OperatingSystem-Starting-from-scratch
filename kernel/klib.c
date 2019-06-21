@@ -117,3 +117,14 @@ PUBLIC char* itoa(char* str, int num)
 
 	return str;
 }
+
+/**
+ * disp_int
+ *
+ */
+PUBLIC void disp_int(int input)
+{
+	char output[16];
+	itoa(output, input);
+	disp_int(output);
+}
