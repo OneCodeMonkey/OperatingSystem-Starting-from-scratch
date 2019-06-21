@@ -71,3 +71,28 @@ PUBLIC void keyboard_handler(int irq)
 	key_pressed = 1;
 }
 
+/**
+ * int_keyboard
+ * <Ring 1> Initialize some variables and set keyboard interrupt handler.
+ *
+ */
+PUBLIC void init_keyboard()
+{
+	kb_in.count = 0;
+	kb_in.p_head = kb_in.p_tail = kb_in.buf;
+
+	shift_l = shift_r = 0;
+	alt_l = alt_r = 0;
+	ctrl_l = ctrl_r = 0;
+
+	caps_lock = 0;
+	num_lock = 1;
+	scroll_lock = 0;
+
+	column = 0;
+
+	set_leds();
+
+	put_irq_handler(KEYBOARD_IRQ, keyboard_handler);
+	enable_irq(KEYBOARD_IRQ);
+}
