@@ -375,3 +375,22 @@ PRIVATE void kb_ack()
 		kb_read = in_byte(KB_DATA);
 	}while(kb_read != KB_ACK);
 }
+
+/**
+ * set_leds
+ *
+ * Set the leds according to: caps_lock, num_lock && scroll_lock.
+ *
+ */
+PRIVATE void set_leds()
+{
+	u8 leds = (caps_lock << 2) | (num_lock << 1) | scroll_lock;
+
+	kb_wait();
+	out_byte(KB_DATA, LED_CODE);
+	kb_ack();
+
+	kb_wait();
+	out_byte(KB_DATA, leds);
+	kb_ack();
+}
