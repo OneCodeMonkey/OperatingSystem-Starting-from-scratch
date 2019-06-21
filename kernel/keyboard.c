@@ -319,3 +319,29 @@ PUBLIC void keyboard_read(TTY* tty)
 		}
 	}
 }
+
+/**
+ * get_byte_from_kb_buf
+ * Read a byte from the keyboard buffer.
+ *
+ * @return The byte read.
+ *
+ */
+PRIVATE u8 get_byte_from_kb_buf()
+{
+	u8 scan_code;
+	while(kb_in.count <= 0) {}  /* wait for a byte to arrive */
+
+	disable_int();	/* for synchronization */
+
+	scan_code = *(kb_in.p_tail);
+	kb_in.p_tail++;
+
+	if(kb_in.p_tail == kb_in.buf + KB_IN_BYTES) {
+		kb_in.p_tail = kb_in.buf;
+	}
+	kb_in.count--;
+	enable_int();	/* for synchronization*/
+
+	return scan_code;
+}
