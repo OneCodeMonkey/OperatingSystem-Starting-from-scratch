@@ -50,3 +50,35 @@ PUBLIC void task_sys()
 		}
 	}
 }
+
+/**
+ * get_rtc_time
+ *
+ * Get RTC time from the CMOS
+ *
+ * @return Zero.
+ *
+ */
+PRIVATE u32 get_rtc_time(struct time *t)
+{
+	t->year = read_register(YEAD);
+	t->month = read_register(MONTH);
+	t->day = read_register(DAY);
+	t->hour = read_register(HOUR);
+	t->minute = read_register(MINUTE);
+	t->second = read_register(SECOND);
+
+	if((read_register(CLK_STATUS) & 0x04) == 0) {
+		/* Convert BCD to binary (default RTC mode) */
+		t->year = BCD_TO_DEC(t->year);
+		t->month = BCD_TO_DEC(t->month);
+		t->day = BCD_TO_DEC(t->day);
+		t->hour = BCD_TO_DEC(t->hour);
+		t->minute = BCD_TO_DEC(t->minute);
+		t->second = BCD_TO_DEC(t->second);
+	}
+
+	t->year += 2000;
+
+	return 0;
+}
