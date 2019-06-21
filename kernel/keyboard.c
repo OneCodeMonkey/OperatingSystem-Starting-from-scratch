@@ -49,4 +49,25 @@ PUBLIC void keyboard_handler(int irq)
 			kb_in.p_head = kb_in.buf;
 		kb_in.count++;
 	}
+
+#if 0
+	if(!(scan_code & FLAG_BREAK) && keymap[(scan_code & 0x7F) * MAP_COLS] == F12) {
+		printl("================================\n");
+		struct proc* p;
+		for(p = &FIRST_PROC; p <= &LAST_PROC; p++) {
+			if(p->p_flags == FREE_SLOT)
+				continue;
+			int from = p->p_recvfrom;
+			int to = p->p_sendto;
+			printl("csip=%x:%x, tks=%x, f=%x(%s), t=%x(%s), him=%x, %s(%d)\n", \
+				p->regs.cs, p->regs.eip, p->ticks, from, from < NR_PROCS ? \
+				proc_table[from].name : (from == ANY ? "ANY" : (from == NO_TASK ? "NO_TASK" : "_?_")), \
+				to, to < NR_PROCS ? proc_table[to].name : (to == ANY ? "ANY" : \
+				(to == NO_TASK ? "NO_TASK" : "_?_")), p->has_int_msg, p->name, proc2pid(p));
+		}
+		printl("================================\n");
+	}
+#endif	
+	key_pressed = 1;
 }
+
