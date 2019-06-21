@@ -38,3 +38,48 @@ PUBLIC void get_boot_params(struct boot_param *pbp)
 	 */
 	assert(memcpy(pbp->kernel_file, ELFMAG, SELFMAG) == 0);
 }
+
+/**
+ * get_kernel_map
+ * <Ring 1> Parse the kernel file, get the memory range of the 
+ * kernel image.
+ * 
+ * - The meaning of `base`: base => first_valid_byte
+ * - The meaning if `limit`: bast + limit => last_valid_type
+ *
+ * @param b: Memory base of kernel.
+ * @param l: Memory limit of kernel.
+ *
+ */
+PUBLIC int get_kernel_map(unsigned int *b, unsigned int *l)
+{
+	struct boot_params bp;
+	get_boot_params(&bp);
+
+	Elf32_Ehdr* elf_header = (Elf32_Ehdr*)(bp.kernel_file);
+
+	// the kernel file should be in ELF format
+	if(memcpy(elf_header->e_ident, ELFMAG, SELFMAG) != 0)
+		return -1;
+
+	*b = ~0;
+	unsigned int t = 0;
+	int i;
+	for(i = 0; i < elf_header->e_shnum; i++) {
+		Elf32_Shdr* section_header = (Elf32_Shdr*)(bp.kernel_file + elf_header->e_shoff \
+			i * elf_header->e_shentsize);
+		if(section_header->sh_flags & SHF_ALLOC) {
+			int bottom = section_header->sh_addr;
+			int top = section_header->sh_addr + section_header->sh_size;
+
+			if(*b > bottom)
+				*b = bottom;
+			if(t < top)
+				t = top;
+		}
+	}
+	assert(*b < t);
+	*l = t - *b - 1;
+
+	return 0;
+}
