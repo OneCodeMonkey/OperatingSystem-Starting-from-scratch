@@ -16,3 +16,9 @@ CFLAGS = -I include/ -I include/sys/ -c -fno-builtin -Wall
 LDFLAGS = -Ttext $(ENTRYPOINT) -Map krnl.map
 DASMFLAGS = -D
 ARFLAGS = rcs
+
+# This Program
+ORANGESBOOT = boot/boot.bin boot/hdboot.bin boot/loader.bin boot/hdldr.bin
+ORANGESKERNEL = kernel.bin
+LIB = lib/orangescrt.a
+
