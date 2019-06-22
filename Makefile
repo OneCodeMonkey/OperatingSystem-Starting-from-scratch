@@ -22,3 +22,15 @@ ORANGESBOOT = boot/boot.bin boot/hdboot.bin boot/loader.bin boot/hdldr.bin
 ORANGESKERNEL = kernel.bin
 LIB = lib/orangescrt.a
 
+OBJS = kernel/kernel.o kernel/start.o kernel/main.o kernel/clock.o kernel/kerboard.o \
+		kernel/tty.o kernel/console.o kernel/i8259.o kernel/global.o kernel/protect.o \
+		kernel/proc.o kernel/systask.o kernel/hd.o kernel/klib.o lib/syslog.o \
+		mm/main.o mm/forkexit.o mm/exec.o fs/main.o fs/open.o fs/misc.o fs/read_write.o \
+		fs/link.o fs/disklog.o
+
+LOBJS = lib/syscall.o lib/printf.o lib/vsprintf.o lib/string.o lib/misc.o lib/open.o \
+		lib/read.o lib/write.o lib/close.o lib/unlink.o lib/lseek.o lib/getpid.o \
+		lib/stat.o lib/fork.o lib/exit.o lib/wait.o lib/exec.o
+
+DASMOUTPUT = kernel.bin.asm
+
