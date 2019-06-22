@@ -60,3 +60,20 @@ PUBLIC void task_mm()
 		}
 	}
 }
+
+/**
+ * init_mm()
+ *
+ * Do some initialization work.
+ *
+ */
+PRIVATE void init_mm()
+{
+	struct boot_params bp;
+	get_boot_params(&bp);
+
+	memory_size = bp.mem_size;
+
+	/* print memory size */
+	printl("{MM} memsize: %dMB\n", memory_size / (1024 * 1024));
+}
