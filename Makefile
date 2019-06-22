@@ -34,3 +34,35 @@ LOBJS = lib/syscall.o lib/printf.o lib/vsprintf.o lib/string.o lib/misc.o lib/op
 
 DASMOUTPUT = kernel.bin.asm
 
+# All phony targets
+.PHONY : everything final image clean realclean disasm all building
+
+# Default starting position
+nop :
+	@echo "why not \'make image' huh? :)"
+
+everything : $(ORANGESBOOT) $(ORANGESKERNEL)
+
+all : realclean everything
+
+image : realclean everything clean building
+
+clean : 
+	rm -f $(OBJS) $(LOBJS)
+
+realclean :
+	rm -f $(OBJS) $(LOBJS) $(LIB) $(ORANGESBOOT) $(ORANGESKERNEL)
+
+disasm :
+	$(DASM) $(DASMFLAGS) $(ORANGESKERNEL) > $(DASMOUTPUT)
+
+building :
+	dd if=boot/boot.bin of=$(FD) bs=512 count=1 conv=notrunc
+	dd if=boot/hdboot.bin of=$(HD) bs=1 count=446 conv=notrunc
+	dd if=boot/hdboot.bin of=$(HD) seek=510 skip=510 bs=1 count=2 conv=notrunc
+
+	sudo mount -o loop $(FD) /mnt/floppy/
+	sudo cp -fv boot/leader.bin /mnt/floppy/
+	sudo cp -fv kernel.bin /mnt/floppy
+	sudo umount /mnt/floppy
+
