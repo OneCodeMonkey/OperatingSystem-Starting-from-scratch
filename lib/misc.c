@@ -145,3 +145,15 @@ PUBLIC char* strcat(char* s1, const char* s2)
 	return s1;
 }
 
+/**
+ * spin()
+ *
+ */
+PUBLIC void spin(char* func_name)
+{
+	printl("\n spinning in %s ...\n", func_name);
+
+	while(1) {
+		//
+	}
+}
