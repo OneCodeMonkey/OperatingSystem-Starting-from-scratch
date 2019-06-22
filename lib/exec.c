@@ -33,3 +33,14 @@ PUBLIC int exec(const char* path)
 
 	return msg.RETVAL;
 }
+
+/**
+ * execl()
+ *
+ */
+PUBLIC int execl(const char* path, const char* arg, ...)
+{
+	va_list parg = (va_list)(&arg);
+	char** p = (char**)parg;
+	return execv(path, p);
+}
