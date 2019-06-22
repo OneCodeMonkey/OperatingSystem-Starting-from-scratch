@@ -11,4 +11,6 @@ Building an Operating System from the very beginning！Seeing at the following w
 详细使用方法待补充...
 
 Note:
-1. kliba.asm renamed to klib.asm
+1. kliba.asm and klib.c will be compiled to distinct bin
+   kliba.asm -> kliba.o
+   klib.c -> klib.o
