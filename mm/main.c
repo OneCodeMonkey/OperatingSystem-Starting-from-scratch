@@ -104,3 +104,22 @@ PUBLIC int alloc_mem(int pid, int memsize)
 
 	return base;
 }
+
+/**
+ * free_mem
+ *
+ * Free a memory block.
+ * Because a memory block is corresponding with a PID, so we don't
+ * need to really `free` anything. In another word, a memory block
+ * is dedicated to one and only one PID, no matter waht proc actually uses
+ * this PID.
+ *
+ * @param pid: whose memory is to be freed.
+ * @return 0 if success.
+ *
+ */
+PUBLIC int free_mem(int pid)
+{
+	return 0;
+}
+
