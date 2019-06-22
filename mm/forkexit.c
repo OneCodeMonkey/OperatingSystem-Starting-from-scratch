@@ -203,3 +203,52 @@ PRIVATE void cleanup(struct proc* proc)
 
 	proc->p_flags = FREE_SLOT;
 }
+
+/**
+ * do_wait()
+ *
+ * Perform the wait() syscall.
+ *
+ * If proc P calls wait(), then MM will do the following in this routine:
+ *     <1> iterate proc_table[],
+ *         if proc A is found as P's child and it is HANGING
+ *           - reply to P (cleanup() will send P a messageto unblock it)
+ *           - release A's proc_table[] entry
+ *           - return (MM will go on with the next message loop)
+ *     <2> if no child of P is HANGING
+ *           - set P's WAITING bit
+ *     <3> if P has no child at all
+ *           - reply to P with error
+ *     <4> return (MM will go on with the next message loop)
+ *
+ */
+PUBLIC void do_wait()
+{
+	int pid = mm_msg.source;
+
+	int i;
+	int children = 0;
+	struct proc* p_proc = proc_table;
+	
+	for(i = 0; i < NR_TASKS + NR_PROCS; i++, p_proc++) {
+		if(p_proc->p_parent == pid) {
+			children++;
+			if(p_proc->p_flags & HANGING) {
+				cleanup(p_proc);
+				return;
+			}
+		}
+	}
+
+	if(children) {
+		/* has children, but no child is HANGING */
+		proc_table[pid].p_flags |= WAITING;
+	} else {
+		/* no child */
+		MESSAGE msg;
+		msg.type = SYSCALL_RET;
+		msg.PID = NO_TASK;
+		send_recv(SEND, pid, &msg);
+	}
+}
+
