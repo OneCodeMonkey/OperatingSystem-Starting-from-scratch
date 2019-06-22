@@ -77,3 +77,30 @@ PRIVATE void init_mm()
 	/* print memory size */
 	printl("{MM} memsize: %dMB\n", memory_size / (1024 * 1024));
 }
+
+/**
+ * alloc_mem()
+ *
+ * Allocate a memory block for a proc.
+ *
+ * @param pid: Which proc the memory is for.
+ * @param memsize: How many bytes is needed.
+ * 
+ * @return The base of the memory just allocated.
+ *
+ */
+PUBLIC int alloc_mem(int pid, int memsize)
+{
+	assert(pid >= (NR_TASKS + NR_NATIVE_PROCS));
+	if(memsize > PROC_IMAGE_SIZE_DEFAULT) {
+		panic("unsupported memory request: %d. (should be less than %d)", \
+			memsize, PROC_IMAGE_SIZE_DEFAULT);
+	}
+
+	int base = PROCS_BASE + (pid - (NR_TASKS + NR_NATIVE_PROCS)) * PROC_IMAGE_SIZE_DEFAULT;
+
+	if(base + memsize >= memory_size)
+		panic("memory allocation failed. pid:%d", pid);
+
+	return base;
+}
