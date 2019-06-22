@@ -51,3 +51,36 @@ PUBLIC int send_recv(int function, int src_dest, MESSAGE* msg)
 
 	return ret;
 }
+
+/**
+ * memcmp
+ * 
+ * Compare memory areas.
+ *
+ * @param s1: The 1st area.
+ * @param s2: The 2nd area.
+ * @param n: The first n bytes will be compared.
+ *
+ * @return an integer less than or equal to or greater than 0 if the first
+ *  	n bytes of s1 is found, respectively, to be less than, to match,
+ *		or be greater then the first n bytes of s2.
+ *
+ */
+PUBLIC int memcmp(const void* s1, const void* s2, int n)
+{
+	if((s1 == 0) || (s2 == 0)) {	/* for stablity( robustness) */
+		return (s1 - s2);
+	}
+
+	const char* p1 = (const char*)s1;
+	const char* p2 = (const char*)s2;
+
+	int i;
+	for(i = 0; i < n; i++, p1++, p2++) {
+		if(*p1 != *p2)
+			return (*p1 - *p2);
+	}
+
+	return 0;
+}
+
