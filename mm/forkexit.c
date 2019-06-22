@@ -182,3 +182,24 @@ PUBLIC void do_exit(int status)
 		}
 	}
 }
+
+/**
+ * cleanup
+ * 
+ * Do the last jobs to clean up a proc thoroughly:
+ *		- Send proc's parent a message to unblock it, and
+ *        release proc's proc_table[] entry
+ *
+ * @param proc: Process to clean up
+ *
+ */
+PRIVATE void cleanup(struct proc* proc)
+{
+	MESSAGE msg2parent;
+	msg2parent.type = SYSCALL_RET;
+	msg2parent.PID = proc2pid(proc);
+	msg2parent.STATUS = proc->exit_status;
+	send_recv(SEND, proc->p_parent, &msg2parent);
+
+	proc->p_flags = FREE_SLOT;
+}
