@@ -118,3 +118,14 @@ PUBLIC int vsprintf(char* buf, const char* fmt, va_list args)
 	return (p - buf);
 }
 
+/**
+ * sprintf()
+ *
+ */
+int sprintf(char* buf, const char* fmt, ...)
+{
+	va_list arg = (va_list)((char*)(&fmt) + 4); 	/* 4 是fmt所占堆栈的大小 */
+
+	return vsprintf(buf, fmt, arg);
+}
+
