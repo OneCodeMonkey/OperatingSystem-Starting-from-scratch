@@ -4,7 +4,7 @@ Building an Operating System from the very beginning！Seeing at the following w
 ###### 操作系统-演示demo:
 
 <div align="center">
-    <img src="https://raw.githubusercontent.com/OneCodeMonkey/OperatingSystem-Starting-from-scratch/63b0eb0e1d0938d793e6be432290b7a74cba0337/.others/gif/os_demo_part_1.gif" width="100%">
+    <img src="https://raw.githubusercontent.com/OneCodeMonkey/OperatingSystem-Starting-from-scratch/63b0eb0e1d0938d793e6be432290b7a74cba0337/.others/gif/os_demo_part_1.gif" width="80%">
 </div>
 
 运行环境：
