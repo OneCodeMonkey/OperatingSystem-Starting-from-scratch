@@ -6,7 +6,7 @@ Building an Operating System from the very beginning！Seeing at the following w
 
 汇编编译器：NASM
 
-使用时clone本项目，解压 100m.rar 得到镜像文件 100m.img
+使用时clone本项目，解压 80m.img.bak.gz 得到镜像文件 80m.img
 
 详细使用方法待补充...
 
