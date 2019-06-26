@@ -90,3 +90,21 @@ PUBLIC int sys_sendrec(int function, int src_dest, MESSAGE* m, struct proc* p)
 
 	return 0;
 }
+
+/**
+ * ldt_seg_linear
+ *
+ * <Ring 0~1> Calculate the linear address of a certain segment of a given
+ * proc.
+ * 
+ * @param p: whose(the proc ptr)
+ * @param idx: which(one proc has more than one segments)
+ * @return    the required linear address
+ *
+ */
+PUBLIC int ldt_seg_linear(struct proc* p, int idx)
+{
+	struct descriptor* d = &p->ldts[idx];
+
+	return d->base_high << 24 | d->base_mid << 16 | d->base_low;
+}
