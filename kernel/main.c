@@ -344,3 +344,12 @@ void TestA()
 {
 	for(;;);
 }
+
+/**
+ * TestB
+ *
+ */
+void TestB()
+{
+	for(;;);
+}
