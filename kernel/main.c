@@ -353,3 +353,12 @@ void TestB()
 {
 	for(;;);
 }
+
+/**
+ * TestC
+ *
+ */
+void TestC()
+{
+	for(;;);
+}
