@@ -60,3 +60,43 @@ disp_str:
 	pop ebp
 	ret		; return
 ; ------------------------------------------------------------------------
+
+; ------------------------------------------------------------------------
+; void disp_color_str(char* info, int color);
+; ------------------------------------------------------------------------
+disp_color_str:
+	push ebp
+	mov ebp, esp
+
+	mov esi, [ebp + 8]		; pszInfo
+	mov edi, [disp_pos]
+	mov ah, [ebp + 12]		; color
+
+.1:
+	lodsb
+	test al, al
+	jz .2
+	cmp al, 0Ah		; 判断是否按了回车
+	jnz .3
+	push eax
+	mov eax, edi
+	mov bl, 160
+	div bl
+	and eax, 0FFh
+	inc eax
+	mov bl, 160
+	mul bl
+	mov edi, eax
+	pop eax
+	jmp .1
+
+.3:
+	mov [gs:edi], ax
+	add edi, 2
+	jmp .1
+
+.2:
+	mov [disp_pos], edi
+	pop ebp
+	ret 		; return
+; ------------------------------------------------------------------------
