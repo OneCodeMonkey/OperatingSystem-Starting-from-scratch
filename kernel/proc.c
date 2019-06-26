@@ -222,3 +222,76 @@ PRIVATE int deadlock(int src, int dest)
 
 	return 0;
 }
+
+/**
+ * msg_send
+ *
+ * <Ring 0> Send a message to the dest proc. If dest is blocked waiting
+ * for the message, copy the message to it and unblock dest. Otherwise
+ * the caller will be blocked and appended to the dest's sending queue.
+ *
+ * @param current: The caller( the sender).
+ * @param dest: To whom the message is sent.
+ * @param m: The message
+ * @return 0 if success
+ *
+ */
+PRIVATE int msg_send(struct proc* current, int dest, MESSAGE* m)
+{
+	struct proc* sender = current;
+	struct proc* p_dest = proc_table + dest;	/* proc dest */
+	assert(proc2pid(sender) != dest);
+
+	/* check for deadlock here */
+	if(deadlock(proc2pid(sender), dest)) {
+		panic(">>DEADLOCK<< %s->%s", sender->name, p_dest->name);
+	}
+
+	if((p_dest->p_flags & RECEIVING) \	/* dest is waiting for the msg */
+		(p_dest->p_recvfrom == proc2pid(sender) || \
+		p_dest->p_recvfrom == ANY)) {
+		assert(p_dest->p_msg);
+		assert(m);
+
+		phys_copy(va2la(dest, p_dest->p_msg), va2la(proc2pid(sender), m), sizeof(MESSAGE));
+		p_dest->p_msg = 0;
+		p_dest->p_flags &= ~RECEIVING;	/* dest has received the msg */
+		p_dest->p_recvfrom = NO_TASK;
+		unblock(p_dest);
+
+		assert(p_dest->p_flags == 0);
+		assert(p_dest->p_msg == 0);
+		assert(p_dest->p_recvfrom == NO_TASK);
+		assert(p_dest->p_sendto == NO_TASK);
+		assert(sender->p_flags == 0);
+		assert(sender->p_msg == 0);
+		assert(sender->p_recvfrom == NO_TASK);
+		assert(sender->p_sendto == NO_TASK);
+	} else {	/* dest is not waiting for the msg */
+		sender->p_flags |= SENDING;
+		assert(sender->p_flags == SENDING);
+		sender->p_sendto = dest;
+		sender->p_msg = m;
+
+		/* append to the sending queue */
+		struct proc* p;
+		if(p_dest->q_sending) {
+			p = p_dest->q_sending;
+			while(p->next_sending)
+				p = p->next_sending;
+			p->next_sending = sender;
+		} else {
+			p_dest->q_sending = sender;
+		}
+		sender->next_sending = 0;
+
+		block(sender);
+
+		assert(sender->p_flags == 0);
+		assert(sender->p_msg == 0);
+		assert(sender->p_recvfrom == NO_TASK);
+		assert(sender->p_sendto == dest);
+	}
+
+	return 0;
+}
