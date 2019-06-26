@@ -176,3 +176,49 @@ PRIVATE void unblock(struct proc* p)
 {
 	assert(p->p_flags == 0);
 }
+
+/**
+ * deadlock
+ *
+ * <Ring 0> Check whether it is safe to send a message from src to dest.
+ * The routine will detect if the messaging graph contains a cycle. For
+ * instance, if we have procs trying to send messages like this:
+ *
+ *     A -> B -> C -> A, 
+ *
+ * then a deadlock occurs, because all of them will wait forever.
+ * If no cycles detected, it is considered as safe.
+ *
+ * @param src: Who wants to send message.
+ * @param dest: To whom the message is sent.
+ * @return 0 if success.
+ *
+ */
+PRIVATE int deadlock(int src, int dest)
+{
+	struct proc* p = proc_table + dest;
+
+	while(1) {
+		if(p->p_flags & SENDING) {
+			if(p->p_sendto == src) {
+				/* print the chain */
+				p = proc_table + dest;
+				printl("=_=%s", p->name);
+
+				do{
+					assert(p->p_msg);
+					p = proc_table + p->p_sendto;
+					printl("->%s", p->name);
+				}while(p != proc_table + src);
+				printl("=_=");
+
+				return 1;
+			}
+			p = proc_table + p->p_sendto;
+		} else {
+			break;
+		}
+	}
+
+	return 0;
+}
