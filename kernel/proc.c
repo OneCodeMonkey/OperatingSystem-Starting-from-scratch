@@ -132,3 +132,16 @@ PUBLIC void* va2la(int pid, void* va)
 
 	return (void*)la;
 }
+
+/**
+ * reset_msg
+ * 
+ * <Ring 0~3> Clear up a MESSAGE by setting each byte to 0.
+ *
+ * @param p: The message to be cleared
+ *
+ */
+PUBLIC void reset_msg(MESSAGE* p)
+{
+	memset(p, 0, sizeof(MESSAGE));
+}
