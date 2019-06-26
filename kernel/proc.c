@@ -162,3 +162,17 @@ PRIVATE void block(struct proc* p)
 	assert(p->p_flags);
 	schedule();
 }
+
+/**
+ * unblock
+ *
+ * <Ring 0> This is a dummy routine. Actually it does nothing. When it is
+ * called, the `p_flags` should have been cleared (== 0).
+ *
+ * @param p: The unblocked proc.
+ *
+ */
+PRIVATE void unblock(struct proc* p)
+{
+	assert(p->p_flags == 0);
+}
