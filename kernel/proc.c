@@ -145,3 +145,20 @@ PUBLIC void reset_msg(MESSAGE* p)
 {
 	memset(p, 0, sizeof(MESSAGE));
 }
+
+/**
+ * block
+ * 
+ * <Ring 0> This routine is called after `p_flags` has been set(but != 0),
+ * it calls `schedule()` to choose another proc as the `proc_ready`.
+ * 
+ * @attention: This routine doesn't change `p_flags`. Make sure the `p_flags`
+ * of the proc to be blocked has been set properly.
+ * @param p: The proc to be blocked.
+ *
+ */
+PRIVATE void block(struct proc* p)
+{
+	assert(p->p_flags);
+	schedule();
+}
