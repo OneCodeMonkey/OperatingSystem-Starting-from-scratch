@@ -225,3 +225,69 @@ void untar(const char* filename)
 
 	printf(" extract completed, %d files extracted] \n", i);
 }
+
+/**
+ * shabby_shell
+ *
+ * A simple shell
+ *
+ * @param tty_name: TTY file name
+ *
+ */
+void shabby_shell(const char* tty_name)
+{
+	int fd_stdin = open(tty_name, O_RDWR);
+	assert(fd_stdin == 0);
+	int fd_stdout = open(tty_name, O_RDWR);
+	assert(fd_stdout == 1);
+
+	char rdbuf[128];
+
+	while(1) {
+		write(1, "$ ", 2);
+		int r = read(0, rdbuf, 70);
+		rdbuf[r] = 0;
+
+		int argc = 0;
+		char* argv[PROC_ORIGIN_STACK];
+		char* p = rdbuf;
+		char* s;
+		int word = 0;
+		char ch;
+		do {
+			ch = *p;
+			if(*p != ' ' && *p != 0 && !word) {
+				s = p;
+				word = 1;
+			}
+			if((*p == ' ' || *p == 0) && word) {
+				word = 0;
+				argv[argc++] = s;
+				*p = 0;
+			}
+			p++;
+		}while(ch);
+		argv[argc] = 0;
+
+		int fd = open(argv[0], O_RDWR);
+		if(fd == -1) {
+			if(rdbuf[0]) {
+				write(1, "{", 1);
+				write(1, rdbuf, r);
+				write(1, "}\n", 2);
+			}
+		} else {
+			close(fd);
+			int pid = fork();
+			if(pid != 0) {	/* if it's a parent process */
+				int s;
+				wait(&s);
+			} else {	/* if it's a child process */
+				execv(argv[0], argv);
+			}
+		}
+	}
+
+	close(1);
+	close(0);
+}
