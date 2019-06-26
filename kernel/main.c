@@ -291,3 +291,47 @@ void shabby_shell(const char* tty_name)
 	close(1);
 	close(0);
 }
+
+/**
+ * Init
+ *
+ * The hen.
+ *
+ */
+void Init()
+{
+	int fd_stdin = open("/dev_tty0", O_RDWR);
+	assert(fd_stdin == 0);
+	int fd_stdout = open("/dev_tty0", O_RDWR);
+	assert(fd_stdout == 1);
+
+	printf("Init() is running... \n");
+
+	/* extract `cmd_tar` */
+	untar("/cmd.tar");
+
+	char* tty_list[] = {"/dev_tty1", "/dev_tty2"};
+
+	int i;
+	for(i = 0; i < sizeof(tty_list) / sizeof(tty_list[0]); i++) {
+		int pid = fork();
+		if(pid != 0) {	/* if it's a parent process */
+			printf("[parent is running, child pid:%d]\n", pid);
+		} else {	/* if it's a child process */
+			printf("[child is running, pid:%d]\n", getpid());
+			close(fd_stdin);
+			close(fd_stdout);
+
+			shabby_shell(tty_list[i]);
+			assert(0);
+		}
+	}
+
+	while(1) {
+		int s;
+		int child = wait(&s);
+		printf("child (%d) exited with status: %d. \n", child, s);
+	}
+
+	assert(0);
+}
