@@ -335,3 +335,12 @@ void Init()
 
 	assert(0);
 }
+
+/**
+ * TestA
+ *
+ */
+void TestA()
+{
+	for(;;);
+}
