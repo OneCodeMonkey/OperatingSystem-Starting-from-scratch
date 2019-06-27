@@ -473,3 +473,56 @@ PUBLIC void inform_int(int task_nr)
 		p->has_int_msg = 1;
 	}
 }
+
+/**
+ * dump_proc
+ *
+ */
+PUBLIC void dump_proc(struct proc* p)
+{
+	char info[STR_DEFAULT_LEN];
+	int i;
+	int text_color = MAKE_COLOR(GREEN, RED);
+	int dump_len = sizeof(struct proc);
+
+	out_byte(CRTC_ADDR_REG, START_ADDR_H);
+	out_byte(CRTC_DATA_REG, 0);
+	out_byte(CRTC_ADDR_REG, START_ADDR_L);
+	out_byte(CRTC_DATA_REG, 0);
+
+	sprintf(info, "byte dump of proc_table[%d]:\n", p - proc_table);
+	disp_color_str(info, text_color);
+
+	for(i = 0; i < dump_len; i++) {
+		sprintf(info, "%x.", ((unsigned char*)p)[i]);
+		disp_color_str(info, text_color);
+	}
+
+	/* printl("======"); */
+	disp_color_str("\n\n", text_color);
+	sprintf(info, "ANY: 0x%x.\n", ANY);
+	disp_color_str(info, text_color);
+	sprintf(info, "NO_TASK: 0x%x.\n", NO_TASK);
+	disp_color_str(info, text_color);
+	disp_color_str("\n", text_color);
+
+	sprintf(info, "ldt_sel: 0x%x. ", p->ldt_sel);
+	disp_color_str(info, text_color);
+	sprintf(info, "ticks: 0x%x. ", p->ticks);
+	disp_color_str(info, text_color);
+	sprintf(info, "priority: 0x%x. ", p->priority);
+	disp_color_str(info, text_color);
+	sprintf(info, "name: %s. ", p->name);
+	disp_color_str(info, text_color);
+	disp_color_str("\n", text_color);
+	sprintf(info, "p_flags: 0x%x. ", p->p_flags);
+	disp_color_str(info, text_color);
+	sprintf(info, "p_recvfrom: 0x%x. ", p->p_recvfrom);
+	disp_color_str(info, text_color);
+	sprintf(info, "p_sendto: 0x%x. ", p->p_sendto);
+	disp_color_str(info, text_color);
+
+	disp_color_str("\n", text_color);
+	sprintf(info, "has_int_msg: 0x%x. ", p->has_int_msg);
+	disp_color_str(info, text_color);
+}
