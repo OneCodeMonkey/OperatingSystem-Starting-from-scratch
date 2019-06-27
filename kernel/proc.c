@@ -526,3 +526,30 @@ PUBLIC void dump_proc(struct proc* p)
 	sprintf(info, "has_int_msg: 0x%x. ", p->has_int_msg);
 	disp_color_str(info, text_color);
 }
+
+/**
+ * dump_msg
+ *
+ */
+PUBLIC void dump_msg(const char* title, MESSAGE* m)
+{
+	int packed = 0;
+	printl("{%s}<0x%x>{%ssrc:%s(%d),%stype:%d, \
+		%s(0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x)%s}%s",
+		title,
+		(int)m,
+		packed ? "" : "\n        ",
+		proc_table[m->source].name,
+		m->source,
+		packed ? " " : "\n        ",
+		m->type,
+		packed ? " " : "\n        ",
+		m->u.m3.m3i1,
+		m->u.m3.m3i2,
+		m->u.m3.m3i3,
+		m->u.m3.m3i4,
+		(int)m->u.m3.m3p1,
+		(int)m->u.m3.m3p2,
+		packed ? "" : "\n",
+		packed ? "" : "\n");
+}
