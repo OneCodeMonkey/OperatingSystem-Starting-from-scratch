@@ -149,3 +149,20 @@ PUBLIC u32 seg2linear(u16 seg)
 
 	return (p_dest->base_high << 24) | (p_dest->base_mid << 16) | (p_dest->base_low);
 }
+
+/**
+ * init_descriptor
+ *
+ * 初始化段描述符
+ *
+ */
+PUBLIC void init_desc(struct descriptor* p_desc, u32 base, u32 limit, u16 attribute)
+{
+	p_desc->limit_low = limit & 0xFFFF;		/* 段界限1  （2字节）*/
+	p_desc->base_low = base & 0x0FFFF;		/* 段基址1  （2字节）*/
+	p_desc->base_mid = (base >> 16) & 0x0FF;/* 段基址2  （1字节）*/
+	p_desc->attr1 = attribute & 0xFF;		/* 属性1 */
+	p_desc->limit_high_attr2 = ((limit >> \
+		16) & 0x0F) | ((attribute >> 8) & 0xF0);/* 段界限2 + 属性2 */
+	p_desc->base_high = (base >> 24) & 0x0FF;	/* 段基址3 （1字节） */
+}
