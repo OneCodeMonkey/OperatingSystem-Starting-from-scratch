@@ -137,3 +137,15 @@ PUBLIC void init_idt_desc(unsigned char vector, u8 desc_type, int_handler handle
 	p_gate->attr = desc_type | (privilege << 5);
 	p_gate->offset_high = (base >> 16) & 0xFFFF;
 }
+
+/**
+ * seg2phys
+ *
+ * 根据段名求绝对地址
+ */
+PUBLIC u32 seg2linear(u16 seg)
+{
+	struct descriptor* p_dest = &gdt[seg >> 3];
+
+	return (p_dest->base_high << 24) | (p_dest->base_mid << 16) | (p_dest->base_low);
+}
