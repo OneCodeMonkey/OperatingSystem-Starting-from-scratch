@@ -120,3 +120,20 @@ PUBLIC void init_prot()
 			DA_LDT);
 	}
 }
+
+/**
+ * init_idt_desc
+ *
+ * 初始化 386 中断门
+ *
+ */
+PUBLIC void init_idt_desc(unsigned char vector, u8 desc_type, int_handler handler, unsigned char privilege)
+{
+	struct gate* p_gate = &idt[vector];
+	u32 base = (u32)handler;
+	p_gate->offset_low = base & 0xFFFF;
+	p_gate->selector = SELECTOR_KERNEL_CS;
+	p_gate->dcount = 0;
+	p_gate->attr = desc_type | (privilege << 5);
+	p_gate->offset_high = (base >> 16) & 0xFFFF;
+}
