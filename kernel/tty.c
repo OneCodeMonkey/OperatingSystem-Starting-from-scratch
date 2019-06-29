@@ -401,3 +401,36 @@ PUBLIC int sys_printx(int _unused1, int _unused2, char* s, struct proc* proc)
 
 	return 0;
 }
+
+/**
+ * dump_tty_buf
+ *
+ * For debug only.
+ *
+ */
+PUBLIC void dump_tty_buf()
+{
+	TTY* tty = &tty_table[1];
+
+	static char sep[] = "--------------------------------\n";
+
+	printl(sep);
+
+	printl("head: %d\n", tty->ibuf_head - tty->ibuf);
+	printl("tail: %d\n", tty->ibuf_tail - tty->ibuf);
+	printl("cnt: %d\n", tty->ibuf_cnt);
+
+	int pid = tty->tty_caller;
+	printl("caller: %s (%d)\n", proc_table[pid].name, pid);
+	pid = tty->tty_procnr;
+	printl("called: %s (%d)\n", proc_table[pid].name, pid);
+
+	printl("req_buf: %d\n", (int)tty->tty_req_buf);
+	printl("left_cnt: %d\n", tty->tty_left_cnt);
+	printl("trans_cnt: %d\n", tty->tty_trans_cnt);
+
+	printl("--------------------------------\n")；
+
+	strcpy(sep, "\n");
+}
+
