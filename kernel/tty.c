@@ -259,3 +259,59 @@ PRIVATE void tty_dev_write(TTY* tty)
 		}
 	}
 }
+
+/**
+ * tty_do_read
+ *
+ * Invoked when task TTY receives DEV_READ message.
+ *
+ * @note: The routine will return immediately after setting some members of TTY struct,
+ * telling FS to suspend the proc who wants to read. The real transfer
+ * (tty buffer -> proc buffer) is not done here.
+ *
+ * @param tty: From which TTY the caller proc wants to read.
+ * @param msg: The MESSAGE just received.
+ *
+ */
+PRIVATE void tty_do_read(TTY* tty, MESSAGE* msg)
+{
+	/* tell the tty: */
+	tty->tty_caller = msg->source;		/* who called, usually FS */
+	tty->tty_procnr = msg->PROC_NR;		/* who wants the chars */
+	tty->tty_req_buf = va2la(tty->tty_procnr, msg->BUF);	/* where the chars should be put */
+	tty->tty_left_cnt = msg->CNT;	/* how many chars are requested */
+	tty->tty_trans_cnt = 0;		/* how many chars have been transferred */
+	msg->type = SUSPEND_PROC;
+	msg->CNT = tty->tty_left_cnt;
+
+	send_recv(SEND, tty->tty_caller, msg);
+}
+
+/**
+ * tty_do_write
+ *
+ * Invoked when task TTY receives DEV_WRITE message.
+ *
+ * @param tty: To which TTY the caller proc is bound.
+ * @param msg: The MESSAGE.
+ *
+ */
+PRIVATE void tty_do_write(TTY* tty, MESSAGE* msg)
+{
+	char buf[TTY_OUT_BUF_LEN];
+	char* p = (char*)va2la(msg->PROC_NR, msg->BUF);
+	int i = msg->CNT;
+	int j;
+
+	while(i) {
+		int bytes = min(TTY_OUT_BUF_LEN, i);
+		phys_copy(va2la(TASK_TTY, buf), (void*)p, bytes);
+		for(j = 0; j < bytes; j++)
+			out_char(tty->console, buf[j]);
+		i -= bytes;
+		p += bytes;
+	}
+
+	msg->type = SYSCALL_RET;
+	send_recv(SEND, msg->source, msg);
+}
