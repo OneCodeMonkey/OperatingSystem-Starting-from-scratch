@@ -315,3 +315,89 @@ PRIVATE void tty_do_write(TTY* tty, MESSAGE* msg)
 	msg->type = SYSCALL_RET;
 	send_recv(SEND, msg->source, msg);
 }
+
+/**
+ * sys_printx
+ *
+ * System calls accept four parameters. `printx` needs only two, so it 
+ * wastes the other two parameters.
+ *
+ * @note: `printx` accepts only one parameter -- `char* s`, the other one
+ *	 -- `struct proc* proc` is pushed by kernel.asm::sys_call so that
+ *	 the kernel can easily know who invoked the system call.
+ * @note: s[0] (the first char of param `s`) is a magic char. if it equals
+ *	 MAG_CH_PANIC, then this syscall was invoked by `panic()`, which means
+ *	 something goes really wrong and the system is to be halted; if it equals MAG_CH_ASSERT,
+ *	 then this syscall was invoked by `assert()`, which means an assertion failure
+ *	 has occured. @see: kernel/main lib/misc.c
+ *
+ * @param _unused1: Ignored.
+ * @param _unused2: ignored.
+ * @param s: The string to be printed.
+ * @param p_proc: Caller proc.
+ * @return 0 is success.
+ *
+ */
+PUBLIC int sys_printx(int _unused1, int _unused2, char* s, struct proc* proc)
+{
+	const char* p;
+	char ch;
+
+	char reenter_err[] = "? k_reenter is incorrect for unknown reason";
+	reenter_err[0] = MAG_CH_PANIC;
+
+	/**
+	 * @note: Code in both Ring 0 and Ring 1~3 may invoke printx().
+	 * If this happends in Ring 0, no linear-physical address mapping is needed.
+	 *
+	 * @attention: The value pf `k_reenter` is tricky here. When
+	 *	 -- printx() is called in Ring 0
+	 *		 - k_reenter > 0. When code in Ring 0 calls printx(), an
+	 *			`interrupt re-enter` will occur(printx() generates a 
+	 *			software interrupt). Thus `k_reenter` will be increased
+	 *			by `kernel.asm::save` and be greater than 0.
+	 *	 -- printx() is called in Ring 1~3
+	 *		 - k_reenter == 0.
+	 */
+	if(k_reenter == 0)
+		p = va2la(proc2pid(p_proc), s);
+	else if(k_reenter > 0)
+		p = s;
+	else
+		p = reenter_err;
+
+	/**
+	 * @note if assertion fails in any TASK, the system will be halted.
+	 * if it fails in a USER PROC, it will return like any normal syscall does
+	 *
+	 */
+	if((*p == MAG_CH_PANIC) || (*p == MAG_CH_ASSERT && p_proc_ready < \
+		&proc_table[NR_TASKS])) {
+		disable_int();
+		char* v = (char*)V_MEM_BASE;
+		const char* q = p + 1;		/* +1 is to skip the magic char */
+
+		while(v < (char*)(V_MEM_BASE + V_MEM_SIZE)) {
+			*v++ = *q++;
+			*v++ = RED_CHAR;
+			if(!*q) {
+				while(((int)v - V_MEM_BASE) * (SCR_WIDTH * 16)) {
+					v++;
+					*v++ = GRAY_CHAR;
+				}
+				q = p + 1;
+			}
+		}
+
+		__asm__ __volatile__("hlt");		/* shouldn't arrive here */
+	}
+
+	while((ch = *p++) != 0) {
+		if(ch == MAG_CH_PANIC || ch == MAG_CH_ASSERT)
+			continue;	/* skip the magic char */
+
+		out_char(TTY_FIRST->console, ch);
+	}
+
+	return 0;
+}
