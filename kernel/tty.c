@@ -178,3 +178,24 @@ PUBLIC void in_process(TTY* tty, u32 key)
 		}
 	}
 }
+
+/**
+ * put_key
+ *
+ * Put a key into the in-buffer of TTY.
+ * 
+ * @param tty: To which TTY the key is put.
+ * @param key: The key. It's an integer whose higher 24 bits are metadata.
+ *
+ */
+PRIVATE void put_key(TTY* tty, u32 key)
+{
+	if(tty->ibuf_cnt < TTY_IN_BYTES) {
+		*(tty->ibuf_head) = key;
+		tty->ibuf_head++;
+		if(tty->ibuf_head == tty->ibuf + TTY_IN_BYTES)
+			tty->ibuf_head = tty->ibuf;
+
+		tty->ibuf_cnt++;
+	}
+}
