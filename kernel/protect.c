@@ -166,3 +166,58 @@ PUBLIC void init_desc(struct descriptor* p_desc, u32 base, u32 limit, u16 attrib
 		16) & 0x0F) | ((attribute >> 8) & 0xF0);/* 段界限2 + 属性2 */
 	p_desc->base_high = (base >> 24) & 0x0FF;	/* 段基址3 （1字节） */
 }
+
+/**
+ * exception_handler
+ *
+ * 异常处理
+ *
+ */
+PUBLIC void exception_handler(int vec_no, int err_code, int eip, int cs, int eflags)
+{
+	int i;
+	int text_color = 0x74;	/* 底字用红色 */
+	char err_description[][64] = {
+		"#DE Divide Error",
+		"#DB RESERVED",
+		"#BP Breakpoint",
+		"#OF Overflow",
+		"#BR BOUND Range Exceeded",
+		"#UD Invalid Opcode (Undefined Opcode)",
+		"#NM Device Not Available (No Math Coprocessor)",
+		"#DF Double Fault",
+		"    Coprocessor Segment Overrun (reserved)",
+		"#TS Invalid TSS",
+		"#NP Segment Not Present",
+		"#SS Stack-Segment Fault",
+		"#GP General Protection",
+		"#PF Page Fault",
+		"— (Intel reserved. Do not use.)",
+		"#MF x87 FPU Floating-Point Error (Math Fault)",
+		"#AC Alignment Check",
+		"#MC Machine Check",
+		"#XF SIMD Floating-Point Exception"
+	};
+
+	/* 用打印空格的方式清空屏幕前五行，并把disp_pos清零 */
+	disp_pos = 0;
+	for(i = 0; i < 80 * 5; i++) {
+		disp_str(" ");
+	}
+	disp_pos = 0;
+
+	disp_color_str("Exception! -->", text_color);
+	disp_color_str(err_description[vec_no], text_color);
+	disp_color_str("\n\n", text_color);
+	disp_color_str("EFLAGS:", text_color);
+	disp_color_str(eflags);
+	disp_color_str("CS:", text_color);
+	disp_color_str(cs);
+	disp_color_str("EIP:", text_color);
+	disp_color_str(elp);
+
+	if(err_code != 0xFFFFFFFF) {
+		disp_color_str("Error code:", text_color);
+		disp_int(err_code);
+	}
+}
