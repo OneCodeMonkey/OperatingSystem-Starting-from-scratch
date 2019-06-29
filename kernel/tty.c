@@ -124,3 +124,57 @@ PRIVATE void init_tty(TTY* tty)
 
 	init_screen(tty);
 }
+
+/**
+ * in_process
+ *
+ * keyboard_read() will invoke this routine after having recognized a key press.
+ *
+ * @param tty: The key press is for whom.
+ * @param key: The integer key with metadata.
+ *
+ */
+PUBLIC void in_process(TTY* tty, u32 key)
+{
+	if(!(key & FLAT_EXT))
+		put_key(tty, key);
+	else {
+		int raw_code = key & MASK_RAW;
+		switch(raw_code) {
+			case ENTER:
+				put_key(tty, '\n');
+				break;
+			case BACKSPACE:
+				put_key(tty, '\b');
+				break;
+			case UP:
+				if((key & FLAG_SHIFT_L) || (key & FLAG_SHIFT_R)) {
+					scroll_screen(tty->console, SCR_DN);
+				}
+				break;
+			case DOWN:
+				if((key & FLAG_SHIFT_L) || (key & FLAG_SHIFT_R)) {
+					scroll_screen(tty->console, SCR_UP);
+				}
+				break;
+			case F1:
+			case F2:
+			case F3:
+			case F4:
+			case F5:
+			case F6:
+			case F7:
+			case F8:
+			case F9:
+			case F10:
+			case F11:
+			case F12:
+				if((key & FLAG_ALT_L) || (key & FLAG_ALT_R)) {
+					select_console(raw_code - F1);
+				}
+				break;
+			default:
+				break;
+		}
+	}
+}
