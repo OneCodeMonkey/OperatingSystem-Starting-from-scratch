@@ -287,4 +287,31 @@ PRIVATE void tty_do_read(TTY* tty, MESSAGE* msg)
 	send_recv(SEND, tty->tty_caller, msg);
 }
 
+/**
+ * tty_do_write
+ *
+ * Invoked when task TTY receives DEV_WRITE message.
+ *
+ * @param tty: To which TTY the caller proc is bound.
+ * @param msg: The MESSAGE.
+ *
+ */
+PRIVATE void tty_do_write(TTY* tty, MESSAGE* msg)
+{
+	char buf[TTY_OUT_BUF_LEN];
+	char* p = (char*)va2la(msg->PROC_NR, msg->BUF);
+	int i = msg->CNT;
+	int j;
 
+	while(i) {
+		int bytes = min(TTY_OUT_BUF_LEN, i);
+		phys_copy(va2la(TASK_TTY, buf), (void*)p, bytes);
+		for(j = 0; j < bytes; j++)
+			out_char(tty->console, buf[j]);
+		i -= bytes;
+		p += bytes;
+	}
+
+	msg->type = SYSCALL_RET;
+	send_recv(SEND, msg->source, msg);
+}
