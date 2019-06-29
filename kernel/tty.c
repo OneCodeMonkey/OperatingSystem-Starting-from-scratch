@@ -106,3 +106,21 @@ PUBLIC void task_tty()
 		}
 	}
 }
+
+/**
+ * init_tty
+ *
+ * Things to be initialized before a tty can be used:
+ *	 - # the input buffer
+ *	 - # the corresponding console
+ *
+ * @param tty: TTY stands for teletype, a cool ancient magic thing.
+ *
+ */
+PRIVATE void init_tty(TTY* tty)
+{
+	tty->ibuf_cnt = 0;
+	tty->ibuf_head = tty->ibuf_tail = tty->ibuf;
+
+	init_screen(tty);
+}
