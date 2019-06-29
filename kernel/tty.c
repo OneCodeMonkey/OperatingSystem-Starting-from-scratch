@@ -199,3 +199,19 @@ PRIVATE void put_key(TTY* tty, u32 key)
 		tty->ibuf_cnt++;
 	}
 }
+
+/**
+ * tty_dev_read
+ *
+ * Get chars from the keyboard buffer if the TTY::console is the `current` console.
+ *
+ * @see: keyboard_read()
+ *
+ * @param tty: Ptr to TTY.
+ *
+ */
+PRIVATE void tty_dev_read(TTY* tty)
+{
+	if(is_current_console(tty->console))
+		keyboard_read(tty);
+}
