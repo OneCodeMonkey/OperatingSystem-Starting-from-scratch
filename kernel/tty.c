@@ -215,3 +215,47 @@ PRIVATE void tty_dev_read(TTY* tty)
 	if(is_current_console(tty->console))
 		keyboard_read(tty);
 }
+
+/**
+ * tty_dev_write
+ *
+ * Echo the char just pressed and transfer it to the waiting process.
+ *
+ * @param tty: Ptr to a TTY struct.
+ *
+ */
+PRIVATE void tty_dev_write(TTY* tty)
+{
+	while(tty->ibuf_cnt) {
+		char ch = *(tty->ibuf_tail);
+		tty->ibuf_tail++;
+
+		if(tty->ibuf_tail == tty->ibuf + TTY_IN_BYTES)
+			tty->ibuf_tail = tty->ibuf;
+		tty->ibuf_cnt--;
+
+		if(tty->tty_left_cnt) {
+			if(ch >= ' ' && ch <= '~') {	/* can print */
+				out_char(tty->console, ch);
+				void* p = tty->tty_req_buf + tty->tty_trans_cnt;
+				phys_copy(p, (void*)va2la(TASK_TTY, &ch), 1);
+				tty->tty_trans_cnt++;
+				tty->tty_left_cnt--;
+			} else if(ch == '\b' && tty->tty_trans_cnt) {
+				out_char(tty->console, ch);
+				tty->tty_trans_cnt--;
+				tty->tty_left_cnt++;
+			}
+
+			if(ch == '\n' || tty->tty_left_cnt == 0) {
+				out_char(tty->console, '\n');
+				MESSAGE msg;
+				msg.type == RESUME_PROC;
+				msg.PROC_NR = tty->tty_procnr;
+				msg.CNT = tty->tty_trans_cnt;
+				send_recv(SEND, tty->tty_caller, &msg);
+				tty->tty_left_cnt = 0;
+			}
+		}
+	}
+}
