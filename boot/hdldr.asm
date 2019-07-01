@@ -178,3 +178,18 @@ wSectorNo dw 0			; 要读取的扇区号
 bOdd db 0				; 奇数还是偶数
 dwKernelSize dd 0		; KERNEL.BIN 文件大小
 
+
+; ------------------------------------------------------------------------
+; 字符串
+; ------------------------------------------------------------------------
+KernelFileName db "kernel.bin", 0		; KERNEL.BIN 的文件名
+; 为简化代码，下面每个字符串的长度均为 MessageLength
+MessageLength equ 9
+LoadMessage: db "Loading  "	; 补齐9个字符
+Message1 db "         "		; 补齐9个字符
+Message2 db "in HD LDR"		; 补齐9个字符
+Message3 db "No KERNEL"		; 补齐9个字符
+Message4 db "Too Large"		; 补齐9个字符
+Message5 db "Error 0  "		; 补齐9个字符
+; ------------------------------------------------------------------------
+
