@@ -41,3 +41,108 @@ SelectorFlatC equ LABEL_DESC_FLAT_C 	- LABEL_GDT
 SelectorFlatRW equ LABEL_DESC_FLAT_RW 	- LABEL_GDT
 SelectroVideo equ LABEL_DESC_VIDEO		- LABEL_GDT + SA_RPL3
 ; GDT 选择子---------------------------------------------------------------
+
+
+BaseOfStack equ 0100h
+
+err:
+	mov dh, 5			; "Error 0  "
+	call real_mode_disp_str		; display the string
+	jmp $
+LABEL_START:			; <--- 从这里开始 ----------
+	mov ax, cs
+	mov ds, ax
+	mov es, ax
+	mov ss, ax
+	mov sp, BaseOfStack
+
+	mov dh, 0			; "Loading "
+	call real_mode_disp_str	; 显示字符串
+
+	; 得到内存数
+	mov ebx, 0			; ebx = 后续值，开始时需要为0
+	mov di, _MemChkBuf	; es:di 指向一个地址范围描述符结构（Address Range Descriptor Structure）
+
+.MemChkLoop:
+	mov eax, 0E820h		; eax = 0000E820h
+	mov ecx, 20			; ecx = 地址范围描述符结构的大小
+	mov edx, 0534D4150h	; edx = 'SMAP'
+	int 15h				; int 15h
+	jc .MemChkFail
+	add di, 20
+	inc dword [_dwMCRNumber]	; dwMCRNumber = ARDS 的个数
+	cmp ebx, 0
+	jne .MemChkLoop
+	jmp .MemChkOK
+
+.MemChkFail:
+	mov dword [_dwMCRNumber], 0
+
+.MemChkOK:
+	; get the sector nr of '/'(ROOT_INODE), it'll be stored in eax
+	mov eax, [fs:SB_ROOT_INODE]		; fs -> super_block (see hdboot.asm)
+	call get_inode
+
+	; read '/' into es:bx
+	mov dword [disk_address_packet + 8], eax
+	call read_sector
+
+	; let's search '/' for the kernel
+	mov si, KernelFileName
+	push bx							; <- save
+
+.str_cmp:
+	; before comparation:
+	; 	 	es:bx -> dir_entry @ disk
+	;		ds:si -> filename we want
+	add bx, [fs:SB_DIR_ENT_FNAME_OFF]
+
+.1:
+	lodsb				; ds:si -> al
+	cmp al, byte[es:bx]
+	jz .2
+	jmp .different		; oops
+.2:
+	cmp al, 0			; both arrive at a '\0', match
+	jz .found
+	inc bx				; next char @ disk
+	jmp .1				; on and on
+
+.different:
+	pop bx 		; -> restore
+	add bx, [fs:SB_DIR_ENT_SIZE]
+	sub ecx, [fs:SB_DIR_ENT_SIZE]
+	jz .not_found
+	push bx
+	mov si, KernelFileName
+	jmp .str_cmp
+.not_found:
+	mov dh, 3
+	call real_mode_disp_str
+	jmp $
+.found:
+	pop bx
+	add bx, [fs:SB_DIR_ENT_INODE_OFF]
+	mov eax, [es:bx]		; eax <- inode nr of kernel
+	call get_inode			; eax <- start sector nr of kernel
+	mov dword [disk_address_packet + 8], eax
+load_kernel:
+	call read_sector
+	cmp ecx, SECT_BUF_SIZE
+	jl .done
+	sub ecx, SECT_BUF_SIZE 	; bytes_left -= SECT_BUF_SIZE
+	add word [disk_address_packet + 4], SECT_BUF_SIZE		; transfer buffer
+	jc .1
+	jmp .2
+
+.1:
+	add word [disk_address_packet + 6], 1000h
+
+.2:
+	add dword [disk_address_packet + 8], TRANS_SECT_NR	; LBA
+	jmp load_kernel
+
+.done:
+	mov dh, 2
+	call real_mode_disp_str
+
