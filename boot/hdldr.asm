@@ -28,3 +28,16 @@ LABEL_DESC_FLAT_RW: Descriptor 	0,		0fffffh	DA_DRW | DA_32 | DA_LIMIT_4K ; 0 - 4
 LABEL_DESC_VIDEO: Descriptor	0B8000h,0ffffh,	DA_DRW | DA_DPL3	; 显存首地址
 ; GDT --------------------------------------------------------------------
 
+GdtLen equ $ - LABEL_GDT
+GdtPtr dw GdtLen - 1		; 段界限
+dd LOADER_PHY_ADDR + LABEL_GDT		; 基地址（让基地址8字节对齐，将起到优化速度的效果，暂未优化）
+
+; The GDT is not a segment itself; instead, it is a data structure in linear address space.
+; The base linear address and limit of the GDT must be loaded into the GDTR register. -- IA-32 Software Developer's Manual, Vol.3A
+
+
+; GDT 选择子---------------------------------------------------------------
+SelectorFlatC equ LABEL_DESC_FLAT_C 	- LABEL_GDT
+SelectorFlatRW equ LABEL_DESC_FLAT_RW 	- LABEL_GDT
+SelectroVideo equ LABEL_DESC_VIDEO		- LABEL_GDT + SA_RPL3
+; GDT 选择子---------------------------------------------------------------
