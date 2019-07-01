@@ -183,3 +183,47 @@ read_sector:
 
 	ret 		; return
 ; ------------------------------------------------------------------------
+
+
+; ------------------------------------------------------------------------
+; get_inode
+; Entry:
+;		- eax: inode nr.
+; Exit:
+;		- eax: sector nr.
+;		- ecx: the_inode.i_size
+;		- es:ebx: inodes sector buffer
+; registers changed:
+;		- eax, ebx, ecx, edx
+get_inode:
+	dec eax 			; eax <- inode_nr - 1
+	mov bl, [fs:SB_INODE_SIZE]
+	mul bl 				; eax <- (inode_nr - 1) * INODE_SIZE
+	mov edx, SECT_BUF_SIZE
+	sub edx, dword [fs:SB_INODE_SIZE]
+	cmp eax, edx
+	jg err
+	push eax
+
+	mov ebx, [fs:SB_NR_IMAP_SECTS]
+	mov edx, [fs:SB_NR_SMAP_SECTS]
+	lea eax, [ebx+ebx+ROOT_BASE+2]
+	mov dword [disk_address_packet + 8], eax
+	call read_sector
+
+	pop eax			; [es:ebx+eax] -> the inode
+
+	mov edx, dword [fs:SB_INODE_ISIZE_OFF]
+	add edx, ebx
+	add edx, eax			; [es:edx] -> the_inode.i_size
+	mov ecx, [es:edx]		; ecx <- the_inode.i_size
+
+	; es:[ebx+eax] -> the_inode.i_start_sect
+	add ax, word [fs:SB_INODE_START_OFF]
+
+	add bx, ax
+	mov eax, [es:bx]
+	add eax, ROOT_BASE		; eax <- the_inode.i_start_sect
+	ret 		; return
+
+; ------------------------------------------------------------------------
