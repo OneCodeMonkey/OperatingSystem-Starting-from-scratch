@@ -160,3 +160,26 @@ disp_str:
 	int 0x10 				; int 0x10
 	ret 		; return
 ; ------------------------------------------------------------------------
+
+
+; ------------------------------------------------------------------------
+; read_sector
+; Entry: fields (disk_address_packeet) should have been filled before invoking
+; 		 the routine
+; Exit: es:bx -> data read
+; registers changed:
+;		- eax, ebx, dl, si, es
+; ------------------------------------------------------------------------
+read_sector:
+	xor ebx, ebx
+	mov ah, 0x42
+	mov dl, 0x80
+	mov si, disk_address_packet
+	int 0x13
+
+	mov ax, [disk_address_packet + 6]
+	mov es, ax
+	mov bx, [disk_address_packet + 4]
+
+	ret 		; return
+; ------------------------------------------------------------------------
