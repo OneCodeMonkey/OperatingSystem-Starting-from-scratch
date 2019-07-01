@@ -19,3 +19,12 @@ sect_cnt:			 db TRANS_SECT_NR	; [2] Number of blocks to transfer.
 					 dw KERNEL_FILE_SEG	; [6] Address of transfer buffer. Seg
 lba_addr:			 dd 0			; [8] Starting LBA address, Low 32-bits
 					 dd 0 			; [12] Starting LBA address, High 32-bits.
+
+; GDT --------------------------------------------------------------------
+;								段基址	段界限	属性
+LABEL_GDT:	Descriptor			0,		0,		0		; 空描述符
+LABEL_DESC_FLAT_C: Descriptor	0,		0fffffh DA_CR | DA_32 | DA_LIMIT_4K	; 0 - 4G
+LABEL_DESC_FLAT_RW: Descriptor 	0,		0fffffh	DA_DRW | DA_32 | DA_LIMIT_4K ; 0 - 4G
+LABEL_DESC_VIDEO: Descriptor	0B8000h,0ffffh,	DA_DRW | DA_DPL3	; 显存首地址
+; GDT --------------------------------------------------------------------
+
