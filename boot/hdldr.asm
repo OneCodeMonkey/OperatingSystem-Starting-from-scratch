@@ -146,3 +146,27 @@ load_kernel:
 	mov dh, 2
 	call real_mode_disp_str
 
+; ------------------------------------------------------------------------
+; 下面准备跳入保护模式
+; ------------------------------------------------------------------------
+; 加载 GDTR
+lgdt [GdtPtr]
+
+; 关闭中断
+cli
+
+; 打开地址线 A20
+in al, 92h
+or al, 00000010b
+out 92h, al
+
+; 准备切换到保护模式
+mov eax, cr0
+or eax, 1
+mov cr0, eax
+
+; 真正进入保护模式
+jmp dword SelectorFlatC:(LOADER_PHY_ADDR+LABEL_PM_START)
+jmp $				; never arrive here
+
+; ------------------------------------------------------------------------
