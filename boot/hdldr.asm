@@ -223,3 +223,31 @@ real_mode_disp_str:
 	int 0x10 				; int 0x10
 	ret 		; return
 ; ------------------------------------------------------------------------
+
+
+; ------------------------------------------------------------------------
+; read_sector
+; before:
+;		- fields (disk_address_packet) should have been filled
+;		  before invoking the routine
+; after:
+;		- es:bx -> data read
+; registers changed:
+;		- eax, ebx, dl, si, es
+; ------------------------------------------------------------------------
+read_sector:
+	xor ebx, ebx
+
+	mov dword [disk_address_packet + 12], 0
+
+	mov ah, 0x42
+	mov dl, 0x80
+	mov si, disk_address_packet
+	int 0x13
+
+	mov ax, [disk_address_packet + 6]
+	mov es, ax
+	mov bx, [disk_address_packet + 4]
+
+	ret
+; ------------------------------------------------------------------------
