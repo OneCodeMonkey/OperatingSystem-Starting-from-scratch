@@ -395,3 +395,43 @@ jmp	SelectorFlatC:KRNL_ENT_PT_PHY_ADDR	; 正式进入内核 *
 ;     比如，如果把 KRNL_ENT_PT_PHY_ADDR 和 -Ttext 的值都改为 0x400400，则 KERNEL 就会被加载到内存 0x400000(4M) 处，入口在 0x400400。
 ;
 
+
+; ------------------------------------------------------------------------
+; 显示AL中的数字
+; ------------------------------------------------------------------------
+DispAL:
+	push ecx
+	push edx
+	push edi
+
+	mov edi, [dwDispPos]
+
+	mov ah, 0Fh 			; 0000b: 黑底  1111b: 白字
+	mov dl, al 
+	shr al, 4
+	mov ecx, 2
+
+.begin:
+	and al, 01111b
+	cmp al, 9
+	ja .1
+	add al, '0'
+	jmp .2
+.1:
+	sub al, 0Ah
+	add al, 'A'
+.2:
+	mov [gs:edi], ax
+	add edi, 2
+
+	mov al, dl
+	loop .begin
+	;add edi, 2
+
+	mov [dwDispPos], edi
+	pop edi
+	pop edx
+	pop ecx
+
+	ret 		; return
+; ------------------------------------------------------------------------
