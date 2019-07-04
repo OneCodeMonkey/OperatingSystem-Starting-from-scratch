@@ -620,3 +620,49 @@ DispMemInfo:
 	ret 		; return
 ; ------------------------------------------------------------------------
 
+;;; ; 显示内存信息 --------------------------------------------------------------
+;;; DispHDInfo:
+;;; 	push	eax
+
+;;; 	cmp	dword [dwNrHead], 0FFFFh
+;;; 	je	.nohd
+
+;;; 	push	szCylinder
+;;; 	call	DispStr			; printf("C:");
+;;; 	add	esp, 4
+
+;;; 	push	dword [dwNrCylinder] 	; NR Cylinder
+;;; 	call	DispInt
+;;; 	pop	eax
+
+;;; 	push	szHead
+;;; 	call	DispStr			; printf(" H:");
+;;; 	add	esp, 4
+
+;;; 	push	dword [dwNrHead] 	; NR Head
+;;; 	call	DispInt
+;;; 	pop	eax
+
+;;; 	push	szSector
+;;; 	call	DispStr			; printf(" S:");
+;;; 	add	esp, 4
+
+;;; 	push	dword [dwNrSector] 	; NR Sector
+;;; 	call	DispInt
+;;; 	pop	eax
+	
+;;; 	jmp	.hdinfo_finish
+	
+;;; .nohd:
+;;; 	push	szNOHD
+;;; 	call	DispStr			; printf("No hard drive. System halt.");
+;;; 	add	esp, 4
+;;; 	jmp	$			; 没有硬盘，死在这里
+	
+;;; .hdinfo_finish:
+;;; 	call	DispReturn
+
+;;; 	pop	eax
+;;; 	ret
+;;; ; ---------------------------------------------------------------------------
+
