@@ -748,3 +748,26 @@ InitKernel:	; 遍历每一个 Program Header, 根据 Program Header 中的信息
 ; InitKernel
 
 ; ------------------------------------------------------------------------
+
+
+; SECTION .data1 ---------------------------------------------------------
+[SECTION .data1]
+ALIGN 32
+
+LABEL_DATA:
+	; 实模式下使用这些符号
+	; 字符串
+	_szMemChkTitle: 	db 	"BaseAddrL BaseAddrH LengthLow LengthHigh Type", 0Ah, 0
+	_szRAMSize:	db "RAM size: ", 0
+	;;; _szCylinder db "HD Info: C=", 0
+	;;; _szHead db " H=", 0
+	;;; _szSector db " S=", 0
+	;;; _szNOHD	db "No hard drive. System halt.", 0
+	_szReturn: db 0Ah, 0
+	;; 变量
+	;;; _dwNrCylinder dd 0
+	;;; _dwNrHead dd 0
+	;;; _dwNrSector dd 0
+	_dwMCRNumber: dd 0	; Memory Check Result
+	_dwDispPos: dd (80 * 7 + 0) * 2		; 屏幕第7行，第0列
+	_dwMemSize: dd 0
