@@ -566,3 +566,57 @@ MemCpy:
 
 	ret 		; return
 ; ------------------------------------------------------------------------
+
+
+; ------------------------------------------------------------------------
+; 函数： DispMemInfo()
+; ------------------------------------------------------------------------
+DispMemInfo:
+	push esi
+	push edi
+	push ecx
+
+	push szMemChkTitle
+	call DispStr
+	add esp, 4
+
+	mov esi, MemChkBuf
+	mov ecx, [dwMCRNumber]		; for(int i = 0; i < [MCRNumber]; i++)
+								; 每次循环得到一个 ARDS(Address Range Descriptor Structure) 结构
+.loop:
+	mov edx, 5 			; for(int j = 0; j < 5; j++) 每次得到一个ARDS中的成员，共5个成员
+	mov edi, ARDStruct	; 依次显示: BaseAddrLow, BaseAddrHigh, LengthLow, LengthHigh, Type
+.1:
+	push dword [esi]	;
+	call DispInt 		; DispInt(MemChkBuf[j * 4]); 显示一个成员
+	pop eax
+	stosd				; ARDStruct[j * 4] = MemChkBuf[j * 4];
+	add esi, 4
+	dec edx
+	cmp edx, 0
+	jnz .1
+	call DispReturn 	; 换行
+	cmp dword [dwType], 1	; if(Type == AddressRangeMemory)
+	jne .2
+	mov eax, [dwBaseAddrLow]
+	add eax, [dwLengthLow]
+	cmp eax, [dwMemSize]	; if(BaseAddrLow + LengthLow > MemSize)
+	jb .2
+	mov [dwMemSize], eax 	; MemSize = BaseAddrLow + LengthLow;
+.2:
+	loop .loop
+	call DispReturn	
+	push szRAWSize
+	call DispStr
+	add esp, 4
+
+	push dword [dwMemSize]
+	call DispInt
+	add esp, 4
+
+	pop ecx
+	pop edi
+	pop esi
+	ret 		; return
+; ------------------------------------------------------------------------
+
