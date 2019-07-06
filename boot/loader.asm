@@ -114,3 +114,8 @@ LABEL_DIFFERENT:
 LABEL_GOTO_NEXT_SECTOR_IN_ROOT_DIR:
 	add word [wSectorNo], 1
 	jmp LABEL_SEARCH_IN_ROOT_DIR_BEGIN
+
+LABEL_NO_KERNELBIN:
+	mov dh, 3				; "No KERNEL."
+	call DispStrRealMode	; 显示字符串
+	jmp $					; 没有找到 KERNEL.BIN, 进入死循环
