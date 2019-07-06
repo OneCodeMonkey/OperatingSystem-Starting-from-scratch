@@ -91,3 +91,17 @@ LABEL_SEARCH_FOR_KERNELBIN:
 	jz LABEL_GOTO_NEXT_SECTOR_IN_ROOT_DIR	; ┣ 循环次数控制，如果已经读完一个 Sector, 那么跳到下一个 Sector
 	dec dx									; ┛
 	mov cx, 11
+
+LABEL_CMP_FILENAME:
+	cmp cx, 0				; ┓
+	jz LABEL_FILENAME_FOUND	; ┣ 循环次数控制，如果比较了11个字符全都相等。
+	dec cx					; ┛
+	lodsb			; ds:si -> al
+	cmp al, byte [es:di]	; if al == es:di
+	jz LABEL_GO_ON
+	jmp LABEL_DIFFERENT
+
+LABEL_GO_ON:
+	inc di
+	jmp LABEL_CMP_FILENAME	; 继续循环
+
