@@ -26,3 +26,9 @@ dd LOADER_PHY_ADDR + LABEL_GDT	; 基地址（此处可优化，将基地址8字�
 ; The GDT isn't a segment itself; instead, it is a data structure in linear address space.
 ; The base linear address and limit of the GDT must be loaded into the GDTR register. -- IA-32 Software Developer's Manual, Vol.3A
 
+
+; GDT 选择子--------------------------------------------------------------
+SelectorFlatC equ LABEL_DESC_FLAT_C - LABEL_GDT
+SelectorFlatRW equ LABEL_DESC_FLAT_RW - LABEL_GDT
+SelectorVideo equ LABEL_DESC_VIDEO - LABEL_GDT + SA_RPL3
+; ------------------------------------------------------------------------
