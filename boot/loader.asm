@@ -70,3 +70,19 @@ LABEL_START:			; start loading
 	xor dl, dl 			; ┣ 软驱复位
 	int 13h				; ┛
 
+LABEL_SEARCH_IN_ROOT_DIR_BEGIN:
+	cmp word [wRootDirSizeForLoop], 0	; ┓
+	jz LABEL_NO_KERNEL_BIN				; ┣ 判断根目录是否已经读完，如果读完，表示没有找到
+	dec word [wRootDirSizeForLoop]		; ┛
+	mov ax, KERNEL_FILE_SEG
+	mov es, ax			; es <- KERNEL_FILE_SEG
+	mov bx, KERNEL_FILE_OFF		; bx <- KERNEL_FILE_OFF 于是，es:bx = KERBEL_FILE_SEG:KERNEL_FILE_OFF = KERNEL_FILE_SEG * 10h + KERNEL_FILE_OFF
+	mov ax, [wSectorNo]			; ax <- Root Director 中的某个 Sector 号
+	mov cl, 1
+	call ReadSector
+
+	mov si, KernelFileName		; ds:si -> "KERNEL  BIN"
+	mov di, KERNEL_FILE_OFF		; es:di -> KERNEL_FILE_SEG:???? = KERNEL_FILE_SEG * 10h + ????
+	cld
+	mov dx, 10h
+
