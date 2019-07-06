@@ -177,3 +177,21 @@ LABEL_GOON_LOADING_FILE:
 .2:
 	jmp LABEL_GOON_LOADING_FILE		; 继续循环
 
+LABEL_FILE_LOADED:
+	call KillMotor		; 关闭软驱马达
+
+	xor ax, ax
+	mov es, ax
+	mov ax, 0201h		; AH = 02
+						; AL = Number of Sectors to read(must be nonzero)
+	mov cx, 1			; CH = low eight bits of cylinder number
+						; CL = sector number 1-63(bits 0-5)
+						; high two bits of cylinder(bits 6-7, hard disk only)
+	mov dx, 80h			; DH = head number
+						; DL = driver number(bit 7 set for hard disk)
+	mov bx, 500h 		; ES:BX -> data buffer
+	int 13h
+	;; 硬盘操作完毕
+
+	mov dh, 2			; "Ready."
+	call DispStrRealMode	; 显示字符串
