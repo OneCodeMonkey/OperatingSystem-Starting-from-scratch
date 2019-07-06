@@ -836,3 +836,56 @@ InitKernel:			; 遍历每一个 Program Header, 根据 Program Header 中的信�
 	ret 		; return
 ; ------------------------------------------------------------------------
 
+
+; ------------------------------------------------------------------------
+; SECTION .data1 之开始
+; ------------------------------------------------------------------------
+[SECTION .data1]
+
+ALIGN 32
+
+LABEL_DATA:
+; 实模式下使用这些符号
+; 字符串
+_szMemChkTitle: db "BaseAddrL BaseAddrH LengthLow LengthHigh Type", 0Ah, 0
+_szRAMSize: db "RAM size:", 0
+
+_szReturn: db 0Ah, 0
+
+_dwMCRNumber: dd 0	; Memory Check Result
+_dwDispPos: dd (80 * 7 + 0) * 2 	; 屏幕第7行第0列
+_dwMemSize: dd 0
+_ARDStruct: 		; Address Range Descriptor Structure
+
+_dwBaseAddrLow: dd 0
+_dwBaseAddrHigh: dd 0
+_dwLengthLow: dd 0
+_dwLengthHigh: dd 0
+_dwType: dd 0
+
+_MemChkBuf: times 256 db 0
+
+; 保护模式下使用这些符号
+szMemChkTitle equ LOADER_PHY_ADDR + _szMemChkTitle
+szRAMSize equ LOADER_PHY_ADDR + _szRAMSize
+
+szReturn equ LOADER_PHY_ADDR + _szReturn
+
+dwDispPos equ LOADER_PHY_ADDR + _dwDispPos
+dwMemSize equ LOADER_PHY_ADDR + _dwMemSize
+dwMCRNumber equ LOADER_PHY_ADDR + _dwMCRNumber
+ARDStruct equ LOADER_PHY_ADDR + _ARDStruct
+
+dwBaseAddrLow equ LOADER_PHY_ADDR + _dwBaseAddrLow
+dwBaseAddrHigh equ LOADER_PHY_ADDR + _dwBaseAddrHigh
+dwLengthLow equ LOADER_PHY_ADDR + _dwLengthLow
+dwLengthHigh equ LOADER_PHY_ADDR + _dwLengthHigh
+dwType equ LOADER_PHY_ADDR + _dwType
+
+MemChkBuf equ LOADER_PHY_ADDR + _MemChkBuf
+
+; 堆栈在数据段的末尾
+StackSpace: times 1000h db 0
+TopOfStack equ LOADER_PHY_ADDR + $ 	; 栈顶
+
+; ------------------------------------------------------------------------
