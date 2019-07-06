@@ -119,3 +119,28 @@ LABEL_NO_KERNELBIN:
 	mov dh, 3				; "No KERNEL."
 	call DispStrRealMode	; 显示字符串
 	jmp $					; 没有找到 KERNEL.BIN, 进入死循环
+
+LABEL_FILENAME_FOUND:		; 找到 KERNEL.BIN 后来此继续
+	mov ax, RootDirSectors
+	and di, 0FFF0h			; di -> 当前条目的开始
+	push eax
+	mov eaxm [es:di + 01Ch]			; ┓
+	mov dword [dwKernelSize], eax 	; ┛ 保存 KERNEL.BIN 的文件大小
+	cmp eax, KERNEL_VALID_SPACE
+	ja .1
+	pop eax
+	jmp .2
+.1:
+	mov dh, 4				; "Too Large"
+	call DispStrRealMode	; 显示字符串
+	jmp $					; KERNEL.BIN 太大，进入死循环
+.2:
+	add di, 01Ah			; di -> 首 Sector
+	mov cx, word [es:di]
+	push cx					; 保存此 Sector 在 FAT 中的序号
+	add cx, ax
+	add cx, DeltaSectorNo	; 这时 cl 里面是 LOADER.BIN 的起始扇区号（从0开始数的序号）
+	mov ax, KERNEL_FILE_SEG
+	mov es, ax				; es <- KERNEL_FILE_SEG
+	mov bx, KERNEL_FILE_OFF	; bx <- KERNEL_FILE_OFF 于是，es:bx = KERNEL_FILE_SEG:KERNEL_FILE_OFF = KERBEL_FILE_SEG * 10h + KERNEL_FILE_OFF
+	mov ax, cx				; ax <- Sector 号
