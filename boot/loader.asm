@@ -529,3 +529,35 @@ DispAL:
 	ret 		; return
 ; ------------------------------------------------------------------------
 
+
+; ------------------------------------------------------------------------
+; 函数名： DispInt()
+; ------------------------------------------------------------------------
+DispInt:
+	mov eax, [esp + 4]
+	shr eax, 24
+	call DispAL
+
+	mov eax, [esp + 4]
+	shr eax, 16
+	call DispAL
+
+	mov eax, [esp + 4]
+	shr eax, 8
+	call DispAL
+
+	mov eax, [esp + 4]
+	call DispAL
+
+	mov ah, 07h 			; 0000b: 黑底  1111b: 白字
+	mov al, 'h'
+	push edi
+	mov edi, [dwDispPos]
+	mov [gs:edi], ax
+	add edi, 4
+	mov [dwDispPos], edi
+	pop edi
+
+	ret 		; return
+; ------------------------------------------------------------------------
+
