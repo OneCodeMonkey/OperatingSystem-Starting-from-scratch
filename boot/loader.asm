@@ -105,3 +105,9 @@ LABEL_GO_ON:
 	inc di
 	jmp LABEL_CMP_FILENAME	; 继续循环
 
+LABEL_DIFFERENT:
+	and di, 0FFE0h					; else┓ 这时 di 的值不知道是什么，di &= e0 为了让它是 20h 的整数倍
+	add di, 20h						;     ┃
+	mov si, KernelFileName			;     ┣ di += 20h 下一个目录条目
+	jmp LABEL_SEARCH_FOR_KERNELBIN	; 	  ┛
+
