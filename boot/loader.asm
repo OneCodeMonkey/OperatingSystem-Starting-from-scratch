@@ -111,3 +111,6 @@ LABEL_DIFFERENT:
 	mov si, KernelFileName			;     ┣ di += 20h 下一个目录条目
 	jmp LABEL_SEARCH_FOR_KERNELBIN	; 	  ┛
 
+LABEL_GOTO_NEXT_SECTOR_IN_ROOT_DIR:
+	add word [wSectorNo], 1
+	jmp LABEL_SEARCH_IN_ROOT_DIR_BEGIN
