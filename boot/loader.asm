@@ -20,3 +20,9 @@ LABEL_DESC_VIDEO: 	Descriptor	0B8000h, 0ffffh, DA_DRW | DA_DPL3	; 显存首地�
 ; ------------------------------------------------------------------------
 
 
+GdtLen equ $ - LABEL_GDT
+GdtPtr dw GdtLen - 1		; 段界限
+dd LOADER_PHY_ADDR + LABEL_GDT	; 基地址（此处可优化，将基地址8字节对齐将起到速度优化效果）
+; The GDT isn't a segment itself; instead, it is a data structure in linear address space.
+; The base linear address and limit of the GDT must be loaded into the GDTR register. -- IA-32 Software Developer's Manual, Vol.3A
+
