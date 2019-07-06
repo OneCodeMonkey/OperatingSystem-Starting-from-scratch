@@ -311,3 +311,50 @@ ReadSector:
 	ret 		; return
 
 ; ------------------------------------------------------------------------
+
+
+; ------------------------------------------------------------------------
+; 函数名： GetFATEntry()
+; ------------------------------------------------------------------------
+; 作用：找到序号为 ax 的 Sector 在 FAT 中的条目，结果放到 ax 中
+;      需要注意的是，中间需要读 FAT 的扇区到 es:bx 处，所以函数一开始保存了 es,bx
+GetFATEntry:
+	push es
+	push bx
+	push ax
+	mov ax, KERNEL_FILE_SEG		;
+	sub ax, 0100h				;
+	mov es, ax					;
+	pop ax
+	mov byte [bOdd], 0
+	mov bx, 3
+	mul bx 			; dx:ax = ax * 3
+	mov bx, 2
+	div bx 			; dx:ax / 2 ==> ax <- 商，dx <- 余数
+	cmp dx, 0 		; if dx == 0
+	jz LABEL_EVEN
+	mov byte [bOdd], 1
+LABEL_EVEN:			; 偶数
+	xor dx, dx		; 现在 ax 中是 FATEntry 在 FAT 中的偏移量，下面来计算 FATEntry 在那个扇区中（FAT 占用不止一个扇区）
+	mov bx, [BPB_BytsPerSec]
+	div bx 			; dx:ax / BPB_BytsPerSec ==> ax <- 商 （FATEntry 所在的扇区相对于 FAT 的扇区号）
+					; dx <- 余数 （FATEntry 在扇区内的偏移）
+	push dx
+	mov bx, 0		; bx <- 0 于是，es:bx = (KERNEL_FILE_SEG - 100):00 = (KERNEL_FILE_SEG - 100) * 10h
+	add ax, SectorNoOfFAT1 	; 此句执行之后的 ax 就是 FATEntry 所在的扇区号
+	mov cl, 2
+	call ReadSector 		; 读取 FATEntry 所在的扇区，一次读两个。避免在边界处发生错误，因为一个 FATEntry 可能跨越两个扇区
+	pop bx
+	add bx, dx
+	mov ax, [es:bx]
+	cmp byte [bOdd], 1
+	jnz LABEL_EVEN_2
+	shr ax, 4
+LABEL_EVEN_2:
+	and ax, 0FFFh 
+LABEL_GET_FAT_ENRY_OK:
+	pop bx
+	pop es
+	ret 		; return
+
+; ------------------------------------------------------------------------
