@@ -240,3 +240,28 @@ Message2 db "Ready.   "
 Message3 db "No KERNEL"
 Message4 db "Too Large"
 ; ------------------------------------------------------------------------
+
+
+; ------------------------------------------------------------------------
+; 函数：DispStrRealMode()
+; ------------------------------------------------------------------------
+; 运行环境：
+; 	  实模式(保护模式下显示字符串由函数 DispStr() 完成)
+; 作用：
+;     显示一个字符串，函数开始时 dh 中应该是字符串序号（从0开始起）
+DispStrRealMode:
+	mov ax, MessageLength
+	mul dh
+	add ax, LoadMessage
+	mov bp, ax				; ┓
+	mov ax, ds 				; ┣ ES:BP = 串地址
+	mov es, ax				; ┛
+	mov cx, MessageLength	; CX = 字符串长度
+	mov ax, 01301h 			; AH = 13, AL = 01h
+	mov bx, 0007h 			; 页号为0（BH = 0），黑底白字（BL = 07h）
+	mov dl, 0
+	add dh, 3 				; 从第3行往下显示
+	int 10h 		; int 10h
+	ret 		; return
+
+; ------------------------------------------------------------------------
