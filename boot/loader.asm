@@ -144,3 +144,36 @@ LABEL_FILENAME_FOUND:		; 找到 KERNEL.BIN 后来此继续
 	mov es, ax				; es <- KERNEL_FILE_SEG
 	mov bx, KERNEL_FILE_OFF	; bx <- KERNEL_FILE_OFF 于是，es:bx = KERNEL_FILE_SEG:KERNEL_FILE_OFF = KERBEL_FILE_SEG * 10h + KERNEL_FILE_OFF
 	mov ax, cx				; ax <- Sector 号
+
+LABEL_GOON_LOADING_FILE:
+	push ax					; ┓
+	push bx					; ┃
+	mov ah, 0Eh 			; ┃ 每读一个扇区，就在 "Loading  " 后面
+	mov al, '.' 			; ┃ 打一个点，形成这样的进度条效果：
+	mov bl, 0Fh 			; ┃ Loading ......
+	int 10h 				; ┃
+	pop bx					; ┃
+	pop ax					; ┛
+
+	mov cl, 1
+	call ReadSector
+	pop ax					; 取出此 Sector 在 FAT 中的序号
+	call GetFATEntry
+	cmp ax, 0FFFh
+	jz LABEL_FILE_LOADED
+	push ax					; 保存 Sector 在 FAT 中的序号
+	mov dx, RootDirSectors
+	add ax, dx
+	add ax, DeltaSectorNo
+	add bx, [BPB_BytsPerSec]
+	jc .1					; 如果 bx 重新变成0，说明内核大于 64K
+	jmp .2
+.1:
+	push ax 			; es += 0x1000  ← es 指向下一个段
+	mov ax, es
+	add ax, 1000h
+	mov es, ax
+	pop ax
+.2:
+	jmp LABEL_GOON_LOADING_FILE		; 继续循环
+
