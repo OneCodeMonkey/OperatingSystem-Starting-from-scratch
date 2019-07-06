@@ -708,3 +708,100 @@ DispMemInfo:
 	ret 		; return
 ; ------------------------------------------------------------------------
 
+
+;;; ; 显示内存信息 --------------------------------------------------------------
+;;; DispHDInfo:
+;;; 	push	eax
+
+;;; 	cmp	dword [dwNrHead], 0FFFFh
+;;; 	je	.nohd
+
+;;; 	push	szCylinder
+;;; 	call	DispStr			; printf("C:");
+;;; 	add	esp, 4
+
+;;; 	push	dword [dwNrCylinder] 	; NR Cylinder
+;;; 	call	DispInt
+;;; 	pop	eax
+
+;;; 	push	szHead
+;;; 	call	DispStr			; printf(" H:");
+;;; 	add	esp, 4
+
+;;; 	push	dword [dwNrHead] 	; NR Head
+;;; 	call	DispInt
+;;; 	pop	eax
+
+;;; 	push	szSector
+;;; 	call	DispStr			; printf(" S:");
+;;; 	add	esp, 4
+
+;;; 	push	dword [dwNrSector] 	; NR Sector
+;;; 	call	DispInt
+;;; 	pop	eax
+	
+;;; 	jmp	.hdinfo_finish
+	
+;;; .nohd:
+;;; 	push	szNOHD
+;;; 	call	DispStr			; printf("No hard drive. System halt.");
+;;; 	add	esp, 4
+;;; 	jmp	$			; 没有硬盘，死在这里
+	
+;;; .hdinfo_finish:
+;;; 	call	DispReturn
+
+;;; 	pop	eax
+;;; 	ret
+;;; ; ---------------------------------------------------------------------------
+
+
+; 启动分页机制-------------------------------------------------------------
+SetupPaging:
+	; 根据内存大小，计算应初始化多少 PDE 以及多少页表
+	xor edx, edx
+	mov eax, [dwMemSize]
+	mov ebx, 400000h 		; 400000h = 4M = 4096 * 1024，一个页表对应的内存大小
+	div ebx
+	mov ecx, eax 			; 此时 ecx 为页表的格式，也即 PDE 应该的个数
+	test edx, edx
+	jz .no_remainder
+	inc eax 			; 如果余数不为0，就需要增加一个页表
+.no_remainder:
+	push ecx			; 暂存页表个数
+	
+	; 为简化处理，所有线性地址对应相等的物理地址，并且不考虑内存碎片的问题。
+	; 首先初始化页目录
+	mov ax, SelectorFlatRW
+	mov es, ax
+	mov edi, PAGE_DIR_BASE 	; 此段首地址为 PAGE_DIR_BASE
+	xor eax, eax
+	mov eax, PAGE_TBL_BASE | PG_P | PG_USU | PG_RWW
+.1:
+	stosd
+	add eax, 4096 		; 为了简化，所有页表在内存中是连续的。
+	loop .1
+
+	; 再初始化所有页表
+	pop eax 			; 页表个数
+	mov ebx, 1024 		; 每个页表 1024 个PTE
+	mul ebx
+	mov ecx, eax 		; PTE 个数 = 页表个数 * 1024
+	mov edi, PAGE_TBL_BASE 	; 此段首地址为 PAGE_TBL_BASE
+	xor eax, eax
+	mov eax, PG_P | PG_USU | PG_RWW
+.2:
+	stosd
+	add eax, 4096		; 每一页指向 4K 的空间
+	loop .2
+
+	mov eax, PAGE_DIR_BASE
+	mov cr3, eax
+	mov eax, cr0
+	or eax, 80000000h
+	mov cr0, eax
+	jmp short .3
+.3:
+	nop 	; 少量延迟
+
+; 分页机制启动完成---------------------------------------------------------
