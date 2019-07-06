@@ -219,3 +219,24 @@ mov cr0, eax
 ; 真正进入保护模式
 jmp dword SelectorFlatC:(LOADED_PHY_ADDR+LABEL_PM_START)
 
+
+; ------------------------------------------------------------------------
+; Some variables
+; ------------------------------------------------------------------------
+wRootDirSizeForLoop dw RootDirSectors	; Root Directory 占用的扇区数
+wSectorNo dw 0							; 要读取的扇区号
+bOdd db 0								; 奇数还是偶数
+dwKernelSize dd 0						; KERNEL.BIN 文件大小
+
+; ------------------------------------------------------------------------
+; 字符串定义
+; ------------------------------------------------------------------------
+KernelFileName db "KERNEL  BIN", 0		; KERNEL.BIN 之文件名
+; 为简化代码，下面每个字符串的长度均为 MessageLength
+MessageLenth equ 9
+LoadMessage: db "Loading  "
+Message1 db "         "
+Message2 db "Ready.   "
+Message3 db "No KERNEL"
+Message4 db "Too Large"
+; ------------------------------------------------------------------------
