@@ -22,6 +22,6 @@
 #define DISKLOG_WR_SECT(dev, sect_nr) rw_sector(DEV_WRITE, \
 			dev, (sect_nr) * SECTOR_SIZE, \
 			SECTOR_SIZE,	/* read one sector */\
-			getpid(),
+			getpid(), \
 			logdiskbuf);
 
