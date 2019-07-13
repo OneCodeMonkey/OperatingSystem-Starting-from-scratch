@@ -139,3 +139,22 @@ PUBLIC int disklog(char* logstr)
 	return pos;
 }
 
+#define LOG_PROCS 1
+#define LOG_FD_TABLE 1
+#define LOG_INODE_TABLE 1
+#define LOG_SMAP 1
+#define LOG_IMAP 1
+#define LOG_INODE_ARRAY 1
+#define LOG_ROOT_DIR 1
+#define LOG_MSG_SRC2DST 1
+#define LOG_ARROW_PARENT_CHILD 1
+#define LOG_ARROW_PROC_FD 1
+#define LOG_ARROW_FD_INODE 1
+#define LOG_ARROW_INODE_INODEARRAY 1
+
+#if (LOG_SMAP == 1 || LOG_IMAP == 1 || LOG_INODE_ARRAY || LOG_ROOT_DIR == 1)
+static char _buf[SECTOR_SIZE];
+#endif
+
+
+
