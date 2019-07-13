@@ -157,4 +157,320 @@ static char _buf[SECTOR_SIZE];
 #endif
 
 
+/**
+ * dump_fd_graph
+ *
+ * Output a dot graph file.
+ *
+ */
+PUBLIC void dump_fd_graph(const char* fmt, ...)
+{
+	int i;
+	int logbufpos = 0;
+	char title[STR_DEFAULT_LEN];
 
+	va_list arg = (va_list)((char*)(&fmt) + 4);	/* 4 is the sizeo of `fmt` in the stack */
+
+	i = vsprintf(title, fmt, arg);
+	assert(strlen(title) == i);
+
+	printl("dump_fd_graph: %s\n", title);
+
+	struct proc* p_proc;
+
+	int callerpid = getpid();
+
+	printl("<|");
+
+	disable_int();
+
+	int tcks[NR_TASKS + NR_PROCS];
+	int prio[NR_TASKS + NR_PROCS];
+
+	p_proc = proc_table;
+
+	for(i = 0; i < NR_TASKS + NR_PROCS; i++, p_proc++) {
+		if(p_proc->p_flags == FREE_SLOT)
+			continue;
+		if((i == TASK_TTY) || (i == TASK_SYS) || (i == TASK_HD) || (i == callerpid))
+			continue;
+
+		tcks[i] = p_proc->ticks;
+		prio[i] = p_proc->priority;
+		p_proc->ticks = 0;
+		p_proc->priority = 0;
+	}
+
+	static int graph_idx = 0;
+
+#if(LOG_ROOT_DIR == 1)
+	char filename[MAX_FILENAME_LEN + 1];
+#endif
+
+	char* proc_flags[32];
+	for(i = 0; i < sizeof(proc_flags) / sizeof(proc_flags[0]); i++) {
+		proc_flags[i] = "__NOT_DEFINED__";
+	}
+	proc_flags[0] = "RUNNING";
+	proc_flags[SENDING] = "SENDING";
+	proc_flags[RECEIVING] = "RECEIVING";
+	proc_flags[WAITING] = "WAITING";
+	proc_flags[HANGING] = "HANGING";
+	proc_flags[FREE_SLOT] = "FREE_SLOT";
+
+	proc_flags[SENDING + WAITING] = "SENDING, WAITING";
+	proc_flags[RECEIVING + WAITING] = "RECEIVING, WAITING";
+	proc_flags[RECEIVING + HANGING] = "RECEIVING, HANGING";
+
+#if(LOG_PROCS == 1 || LOG_ARROW_PARENT_CHILD == 1)
+	struct proc_parent_map {
+		int pid;
+		int ppid;
+	}ppm[256];
+	int ppm_idx = 0;
+#endif
+
+#if(LOG_PROCS == 1 || LOG_ARROW_PROC_FD == 1)
+	struct proc_fdesc_map {
+		int pid;	/* PID */
+		int filp; 	/* idx of proc_table[pid].filp[] */
+		int desc;	/* idx of f_desc_table[] */
+	}pfm[256];
+	int pfm_idx = 0;
+#endif
+
+#if(LOG_FD_TABLE == 1 || LOG_ARROW_FD_INODE == 1)
+	struct fdesc_inode_map{
+		int desc;	/* idx of f_desc_table[] */
+		int inode;	/* idx of inode_table[] */
+	}fim[256];
+	int fim_idx = 0;
+#endif
+
+	struct msg_src_dst{
+		int src;
+		int dst;
+		int dir;
+	}msd[256];
+	int msd_idx = 0;
+	printl("|_|");
+
+	/* head */
+	logbufpos += sprintf(logbuf + logbufpos, "disgraph filedesc%02d {\n", graph_idx++);
+	lofbufpos += sprintf(logbuf + logbufpos, "\tgraph [\n");
+	logbufpos += sprintf(logbuf + logbufpos, "      rankdir = \"LR\"\n");
+	logbufpos += sprintf(logbuf + logbufpos, "  ];\n");
+	logbufpos += sprintf(logbuf + logbufpos, "  node [\n");
+	logbufpos += sprintf(logbuf + logbufpos, "      fontsize = \"16\"\n");
+	logbufpos += sprintf(logbuf + logbufpos, "      shape = \"ellipse\"\n");
+	logbufpos += sprintf(logbuf + logbufpos, "  ];\n");
+	logbufpos += sprintf(logbuf + logbufpos, "  edge [\n");
+	logbufpos += sprintf(logbuf + logbufpos, "  ];\n");
+
+#if(LOG_PROCS == 1)
+	int k;
+	p_proc = proc_table;
+	logbufpos += sprintf(logbuf + logbufpos, "\n\tsubgraph cluster_0 {\n");
+	for(i = 0; i < NR_TASKS + NR_PROCS; i++, p_proc++) {
+		if(p_proc->p_flags == FREE_SLOT)
+			continue;
+		if(p_proc->p_parent != NO_TASK) {
+			ppm[ppm_idx].pid = i;
+			ppm[ppm_idx].ppid = p_proc->p_parent;
+			ppm_idx++;
+		}
+		if(p_proc->p_flags & RECEIVING) {
+			msd[msd_idx].src = p_proc->p_recvfrom;
+			msd[msd_idx].dst = proc2pid(p_proc);
+			msd[msd_idx].dir = RECEIVING;
+			msd_idx++;
+		}
+		if(p_proc->p_flags & SENDING) {
+			msd[msd_idx].src = proc2pid(p_proc);
+			msd[msd_idx].dst = p_proc->p_sendto;
+			msd[msd_idx].dir = SENDING;
+			msd_idx++;
+		}
+
+		logbufpos += sprintf(logbuf + logbufpos, "\t\t\"proc%d\" [\n\t\t\tlabel = \"<f0>%s (%d) \
+			|<f1> p_flags:%d(%s)|<f2> p_parent:%d%s|<f3> eip:0x%x", \
+			i, \
+			p_proc->name, \
+			i, \
+			p_proc->p_flags, \
+			proc_flags[p_proc->p_flags], \
+			p_proc->p_parent, \
+			p_proc->p_parent == NO_TASK ? "(NO_TASK)" : "", \
+			p_proc->regs.eip);
+
+		int fnr = 3;
+		for(k = 0; k < NR_FILES; k++) {
+			if(p_proc->filp[k] == 0)
+				continue;
+			int fdesc_tbl_idx = p_proc->filp[k] - f_desc_table;
+			logbufpos += sprintf(logbuf + logbufpos, "\t|<f%d> filp[%d]: %d", \
+				fnr, \
+				k, \
+				fdesc_tbl_idx);
+
+			pfm[pfm_idx].pid = i;
+			pfm[pfm_idx].filp = fnr;
+			pfm[pfm_idx].desc = fdesc_tbl_idx;
+			fnr++;
+			pfm_idx++;
+		}
+
+		logbufpos += sprintf(logbuf + logbufpos, "\t\"\n");
+		logbufpos += sprintf(logbuf + logbufpos, "\t\t\tshape = \"record\"\n");
+		logbufpos += sprintf(logbuf + logbufpos, "\t\t];\n");
+	}
+	i = ANY;
+	logbufpos += sprintf(logbuf + logbufpos, "\t\t\"proc%d\" [\n", i);
+	logbufpos += sprintf(logbuf + logbufpos, "\t\t\tlabel = \"<f0>ANY|<f1> ");
+	logbufpos += sprintf(logbuf + logbufpos, "\t\"\n");
+	logbufpos += sprintf(logbuf + logbufpos, "\t\t\tshape = \"record\"\n");
+	logbufpos += sprintf(logbuf + logbufpos, "\t\t];\n");
+	logbufpos += sprintf(logbuf + logbufpos, "\t\tlabel = \"procs\";\n");
+	logbufpos += sprintf(logbuf + logbufpos, "\t}\n");
+#endif
+
+	printl("0");
+
+#if(LOG_FD_TABLE == 1)
+	logbufpos += sprintf(logbuf + logbufpos, "\n\tsubgraph cluster_1 {\n");
+	for(i = 0; i < NR_FILE_DESC; i++) {
+		if(f_desc_table[i].fd_inode == 0)
+			continue;
+
+		int inode_tbl_idx = f_desc_table[i].fd_inode - inode_table;
+		logbufpos += sprintf(logbuf + logbufpos, "\t\t\"filedesc%d\" [\n", i);
+		logbufpos += sprintf(logbuf + logbufpos, "\t\t\tlabel = \"<f0>filedesc %d|<f1> fd_mode:%d|<f2> fd_pos:%d|<f3> fd_cnt:%d|<f4> fd_inode:%d", \
+			i, \
+			f_desc_table[i].fd_mode, \
+			f_desc_table[i].fd_pos, \
+			f_desc_table[i].fd_cnt, \
+			inode_tbl_idx);
+		fim[fim_idx].desc = i;
+		fim[fim_idx].inode = inode_tbl_idx;
+		fim_idx++;
+
+		logbufpos += sprintf(logbuf + logbufpos, "\t\"\n");
+		logbufpos += sprintf(logbuf + logbufpos, "\t\t\tshape = \"record\"\n");
+		logbufpos += sprintf(logbuf + logbufpos, "\t\t];\n");
+	}
+	logbufpos += sprintf(logbuf + logbufpos, "\t\tlabel = \"filedescs\";\n");
+	logbufpos += sprintf(logbuf + logbufpos, "\t}\n");
+#endif
+
+	printl("1");
+
+#if(LOG_INODE_TABLE == 1)
+	logbufpos += sprintf(logbuf + logbufpos, "\n\tsubgraph cluster_2 {\n");
+	for(i = 0; i < NR_INODE; i++) {
+		if(inode_table[i].i_cnt == 0)
+			continue;
+		logbufpos += sprintf(logbuf + logbufpos, "\t\t\"inode%d\" [\n", i);
+		logbufpos += sprintf(logbuf + logbufpos, "\t\t\tlabel = \"<f0>inode %d|<f1> i_mode:0x%x|<f2> i_size:0x%x|<f3> i_start_sect:0x%x|<f4> i_nr_sects:0x%x|<f5> i_dec:0x%x|<f6> i_cnt:%d|<f7> i_num:%d", \
+			i, \
+			inode_table[i].i_mode, \
+			inode_table[i].i_size, \
+			inode_table[i].i_start_sect, \
+			inode_table[i].i_nr_sects, \
+			inode_table[i].i_dec, \
+			inode_table[i].i_cnt, \
+			inode_table[i].i_num);
+		logbufpos += sprintf(logbuf + logbufpos, "\t\"\n");
+		logbufpos += sprintf(logbuf + logbufpos, "\t\t\tshape = \"record\"\n");
+		logbufpos += sprintf(logbuf + logbufpos, "\t\t];\n");
+	}
+	logbufpos += sprintf(logbuf + logbufpos, "\t\tlabel = \"inodes\";\n");
+	logbufpos += sprintf(logbuf + logbufpos, "\t}\n");
+#endif
+
+	printl("2");
+
+	enable_int();
+
+#if(LOG_SMAP == 1)
+	logbufpos += sprintf(logbuf + logbufpos, "\n\tsubgraph cluster_3 {\n");
+	logbufpos += sprintf(logbuf + logbufpos, "\n\t\tstyle=filled;\n");
+	logbufpos += sprintf(logbuf + logbufpos, "\n\t\tcolor=lightgrey;\n");
+
+	int smap_flag = 0;
+	int bit_start = 0;
+
+	int j;
+
+	struct super_block* sb = get_super_block(root_inode->i_dev);
+	int smap_blk0_nr = 1 + 1 + sb->nr_imap_sects;
+
+	for(i = 0; i < sb->nr_smap_sects; i++) {
+		DISKLOG_RD_SECT(root_inode->i_dev, smap_blk0_nr + i);
+		memcpy(_buf, logdiskbuf, SECTOR_SIZE);
+		for(j = 0; j < SECTOR_SIZE; j++) {
+			for(k = 0; k < 8; k++) {
+				if(!smap_flag) {
+					if((_buf[j] >> k) & 1) {
+						smap_flag = 1;
+						bit_start = (i * SECTOR_SIZE + j) * 8 + k;
+					} else {
+						continue;
+					}
+				} else {
+					if((_buf[j] >> k) & 1) {
+						continue;
+					} else {
+						smap_flag = 0;
+						int bit_end = (i * SECTOR_SIZE + j) * 8 + k - 1;
+						logbufpos += sprintf(logbuf + logbufpos, "\t\t\"sector %xh\" [\n", bit_start);
+						logbufpos += sprintf(logbuf + logbufpos, "\t\t\tlabel = \"<f0>sect %xh-%xh", \
+							bit_start, \
+							bit_end);
+						logbufpos += sprintf(logbuf + logbufpos, "\t\"\n");
+						logbufpos += sprintf(logbuf + logbufpos, "\t\t\tshape = \"record\"\n");
+						logbufpos += sprintf(logbuf + logbufpos, "\t\t];\n");
+					}
+				}
+			}
+		}
+	}
+	logbufpos += sprintf(logbuf + logbufpos, "\t\tlabel = \"sector map (dev size: %xh)\";\n", sb->nr_sects);
+	logbufpos += sprintf(logbuf + logbufpos, "\t}\n");
+#endif
+ 	
+ 	printl("3");
+
+#if(LOG_IMAP == 1)
+ 	logbufpos += sprintf(logbuf + logbufpos, "\n\tsubgraph cluster_4 {\n");
+ 	logbufpos += sprintf(logbuf + logbufpos, "\n\t\tstyle=filled;\n");
+ 	logbufpos += sprintf(logbuf + logbufpos, "\n\t\tcolor=lightgrey;\n");
+ 	logbufpos += sprintf(logbuf + logbufpos, "\t\t\"imap\" [\n");
+ 	logbufpos += sprintf(logbuf + logbufpos, "\t\t\tlabel = \"<f0>bits");
+
+ 	/* i: sector index
+ 	 * j: byte index
+ 	 * k: bit index
+ 	 */
+ 	int imap_blk0_nr = 1 + 1;
+ 	for(i = 0; i < sb->nr_imap_sects; i++) {	/* smap_blk0_nr + i: current sect nr. */
+ 		DISKLOG_RD_SECT(root_inode->i_dev, imap_blk0_nr + i);
+ 		memcpy(_buf, logdiskbuf, SECTOR_SIZE);
+ 		for(j = 0; j < SECTOR_SIZE; j++) {
+ 			for(k = 0; k < 8; k++) {
+ 				if((_buf[j] >> k) & 1) {
+ 					int bit_nr = (i * SECTOR_SIZE + j) * 8 + k;
+ 					logbufpos += sprintf(logbuf + logbufpos, "| %xh ", bit_nr);
+ 				}
+ 			}
+ 		}
+ 	}
+ 	logbufpos += sprintf(logbuf + logbufpos, "\t\"\n");
+ 	logbufpos += sprintf(logbuf + logbufpos, "\t\t\tshape = \"record\"\n");
+ 	logbufpos += sprintf(logbuf + logbufpos, "\t\t];\n");
+ 	logbufpos += sprintf(logbuf + logbufpos, "\t\tlabel = \"inode map\";\n");
+ 	logbufpos += sprintf(logbuf + logbufpos, "\t}\n");
+#endif
+
+	printl("4"); 	
+
+}
