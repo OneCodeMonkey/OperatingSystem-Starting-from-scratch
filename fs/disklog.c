@@ -473,4 +473,58 @@ PUBLIC void dump_fd_graph(const char* fmt, ...)
 
 	printl("4"); 	
 
+#if(LOG_INODE_ARRAY == 1)
+	logbufpos += sprintf(logbuf + logbufpos, "\n\tsubgraph cluster_5 {\n");
+	logbufpos += sprintf(logbuf + logbufpos, "\n\t\tstyle=filled;\n");
+	logbufpos += sprintf(logbuf + logbufpos, "\n\t\tcolor=lightgrey;\n");
+
+	sb = get_super_block(root_inode->i_dev);
+	int blk_nr = 1 + 1 + sb->nr_imap_sects + sb->nr_smap_sects;
+	DISKLOG_RD_SECT(root_inode->i_dev, blk_nr);
+	memcpy(_buf, logdiskbuf, SECTOR_SIZE);
+
+	char* p = _buf;
+	for(i = 0; i < SECTOR_SIZE / sizeof(struct inode); i++, p+= INODE_SIZE) {
+		struct inode* pinode = (struct inode*)p;
+		if(pinode->i_start_sect == 0)
+			continue;
+		int start_sect;
+		int end_sect;
+		if(pinode->i_mode) {
+			if(pinode->i_start_sect < sb->n_1st_sect) {
+				panic("should not happen: %x < %x.", pinode->i_start_sect, sb->n_1st_sect);
+			}
+			start_sect = pinode->i_start_sect - sb->n_1st_sect + 1;
+			end_sect = start_sect + pinode->i_nr_sects - 1;
+			logbufpos += sprintf(logbuf + logbufpos, "\t\t\"inodearray%d\" [\n", i + 1);
+			logbufpos += sprintf(logbuf + logbufpos, "\t\t\tlabel = \"<f0> %d|<f2> i_size:0x%x|<f3> sect: %xh-%xh", \
+				i + 1,
+				pinode->i_size, \
+				start_sect, \
+				end_sect);
+
+			logbufpos += sprintf(logbuf + logbufpos, "\t\"\n");
+			logbufpos += sprintf(logbuf + logbufpos, "\t\t\tshape = \"record\"\n");
+			logbufpos += sprintf(logbuf + logbufpos, "\t\t];\n");
+		} else {
+			start_sect = MAJOR(pinode->i_start_sect);
+			end_sect = MINOR(pinode->i_start_sect);
+			logbufpos += sprintf(logbuf + logbufpos, "\t\t\"inodearray%d\" [\n", i + 1);
+			logbufpos += sprintf(logbuf + logbufpos, "\t\t\tlabel = \"<f0> %d|<f2> i_size:0x%x|<f3> dev nr: (%xh,%xh)", \
+				i + 1, \
+				pinode->i_size, \
+				start_sect, \
+				end_sect);
+			logbufpos += sprintf(logbuf + logbufpos, "\t\"\n");
+			logbufpos += sprintf(logbuf + logbufpos, "\t\t\tshape = \"record\"\n");
+			logbufpos += sprintf(logbuf + logbufpos, "\t\t];\n");
+
+		}
+	}
+	logbufpos += sprintf(logbuf + logbufpos, "\t\tlabel = \"inodearray\";\n");
+	logbufpos += sprintf(logbuf + logbufpos, "\t}\n");
+#endif
+
+	printl("5");
+
 }
