@@ -604,4 +604,12 @@ PUBLIC void dump_fd_graph(const char* fmt, ...)
 	}
 #endif
 
+#if(LOG_ARROW_FD_INODE == 1)
+	for(i = 0; i < fim_idx; i++) {
+		logbufpos += sprintf(logbuf + logbufpos, "\t\"filedesc%d\":f4 -> \"inode%d\":f6;\n", \
+			fim[i].desc,
+			fim[i].inode);
+	}
+#endif
+
 }
