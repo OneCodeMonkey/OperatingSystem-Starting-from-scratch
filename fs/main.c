@@ -103,4 +103,21 @@ PRIVATE void mkfs()
  {
  	// todo
  }
+
+ /**
+  * get_inode()
+  *
+  * <Ring 1> Get the inode ptr of given inode nr. A cache -- inode_table[] -- is maintained to make things faster.
+  * If the inode requested is already there, just return it.
+  * Otherwise the inode will be read from the disk.
+  *
+  * @param dev: Device nr.
+  * @param num: I-node nr.
+  * @return  The inode ptr requested.
+  *
+  */
+ PUBLIC struct inode* get_inode(int dev, int num)
+ {
+ 	// todo
+ }
  
