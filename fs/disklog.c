@@ -587,4 +587,12 @@ PUBLIC void dump_fd_graph(const char* fmt, ...)
 	}
 #endif
 
+#if(LOG_ARROW_PARENT_CHILD == 1)
+	for(i = 0; i < ppm_idx; i++) {
+		logbufpos += sprintf(logbuf + logbufpos, "\t\"proc%d\":f0 -> \"proc%d\":f0 [arrowhead=\"dot\", color=\"ivory3\"];\n", \
+			ppm[i].ppid, \
+			ppm[i].pid);
+	}
+#endif	
+
 }
