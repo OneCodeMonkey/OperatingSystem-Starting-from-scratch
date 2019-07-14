@@ -120,4 +120,18 @@ PRIVATE void mkfs()
  {
  	// todo
  }
+
+ /**
+  * put_inode()
+  *
+  * Decrease the reference nr of a slot in inode_table[]. When the nr
+  * reaches zero, it means the inode is not used any more and can be overwritten by a new inode.
+  *
+  * @param pinode: I-node ptr.
+  *
+  */
+ PUBLIC void put_inode(struct inode* pinode)
+ {
+ 	// todo
+ }
  
