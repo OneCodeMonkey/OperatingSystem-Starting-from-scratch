@@ -134,4 +134,17 @@ PRIVATE void mkfs()
  {
  	// todo
  }
+
+ /**
+  * sync_inode()
+  *
+  * <Ring 1> Write the inode back to the disk. Commonly invoked as soon as the inode is changed.
+  *
+  * @param p: I-node ptr.
+  *
+  */
+ PUBLIC void sync_inode(struct inode* p)
+ {
+ 	// todo
+ }
  
