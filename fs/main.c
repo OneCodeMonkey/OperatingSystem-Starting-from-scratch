@@ -58,3 +58,23 @@ PRIVATE void mkfs()
 {
 	// todo
 }
+
+/**
+ * rw_sector()
+ *
+ * <Ring 1> R/W a sector via messaging with the corresponding driver.
+ *
+ * @param io_type: DEV_READ or DEV_WRITE
+ * @param dev: device nr
+ * @param pos: Byte offset from/to where to r/w.
+ * @param bytes: r/w count in bytes.
+ * @param proc_nr: To whom the buffer belongs.
+ * @param buf: r/w buffer.
+ * @return Zero if success.
+ *
+ */
+ PUBLIC int rw_sector(int io_type, int dev, u64 pos, int bytes, int proc_nr, void* buf)
+ {
+ 	// todo
+ } 
+ 
