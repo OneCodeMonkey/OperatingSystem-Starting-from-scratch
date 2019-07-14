@@ -147,4 +147,17 @@ PRIVATE void mkfs()
  {
  	// todo
  }
+
+ /**
+  * fs_fork()
+  *
+  * Perform the aspects of fork() that relate to files.
+  *
+  * @return Zero if success, -1 otherwise.
+  *
+  */
+ PRIVATE int fs_fork()
+ {
+ 	// todo
+ }
  
