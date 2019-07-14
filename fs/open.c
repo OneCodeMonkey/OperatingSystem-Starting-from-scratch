@@ -117,3 +117,18 @@ PRIVATE struct inode* new_inode(int dev, int inode_nr, int start_sect)
 {
 	// todo
 }
+
+/**
+ * new_dir_entry()
+ *
+ * Write a new entry into the directory.
+ *
+ * @param dir_inode: I-node of the directory.
+ * @param inode_nr: I-node nr of the new file.
+ * @param filename: Filename of the new file.
+ *
+ */
+PRIVATE void new_dir_entry(struct inode* dir_inode, int inode_nr, char* filename)
+{
+	// todo
+}
