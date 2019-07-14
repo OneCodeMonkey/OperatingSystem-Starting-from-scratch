@@ -72,3 +72,17 @@ PUBLIC int do_lseek()
 {
 	// todo
 }
+
+/**
+ * alloc_imap_bit()
+ *
+ * Allocate a bit in inode-map.
+ *
+ * @param dev: In which device the inode-map is located.
+ * @return I-node nr.
+ *
+ */
+PRIVATE int alloc_imap_bit(int dev)
+{
+	// todo
+}
