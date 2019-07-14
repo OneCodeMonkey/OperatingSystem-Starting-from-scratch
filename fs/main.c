@@ -77,4 +77,17 @@ PRIVATE void mkfs()
  {
  	// todo
  } 
+
+ /**
+  * read_super_block()
+  *
+  * <Ring 1> Read super block from the given device then write it into a free super_block[] slot.
+  *
+  * @param dev: From which device the super block comes.
+  *
+  */
+ PRIVATE void read_super_block(int dev)
+ {
+ 	// todo
+ }
  
