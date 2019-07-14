@@ -621,4 +621,40 @@ PUBLIC void dump_fd_graph(const char* fmt, ...)
 	}
 #endif
 
+	logbufpos += sprintf(logbuf + logbufpos, "\tlabel = \"%d\";\n", title);
+	logbufpos += sprintf(logbuf + logbufpos, "}\n");
+
+	/* separator */
+	logbufpos += sprintf(logbuf + logbufpos, "--separator--\n");
+
+	assert(logbufpos < LOGBUF_SIZE);
+
+	logbuf[logbufpos] = 0;
+	char tmp[SIR_DEFAULT_LEN / 2];
+	int bytes_left = logbufpos;
+	int pos = 0;
+	while(bytes_left) {
+		int bytes = min(bytes_left, STR_DEFAULT_LEN / 2 - 1);
+		memcpy(tmp, logbuf + pos, bytes);
+		tmp[bytes] = 0;
+		disklog(tmp);
+		pos += bytes;
+		bytes_left -= bytes;
+	}
+
+	disable_int();
+	p_proc = proc_table;
+	for(i = 0; i < NR_TASKS + NR_PROCS; i++, p_proc++) {
+		if(p_proc->p_flags == FREE_SLOT)
+			continue;
+		if((i == TASK_TTY) || (i == TASK_SYS) || (i == TASK_HD) || (i == getpid()))
+			continue;
+		p_proc->ticks = tcks[i];
+		p_proc->priority = prio[i];
+	}
+
+	enable_int();
+
+	printl("|>");
+
 }
