@@ -90,4 +90,17 @@ PRIVATE void mkfs()
  {
  	// todo
  }
+
+ /**
+  * get_super_block()
+  *
+  * <Ring 1> Get the super block from super_block[]
+  * @param dev: Device nr.
+  * @return  The ptr of super block.
+  *
+  */
+ PUBLIC struct super_block* get_super_block(int dev)
+ {
+ 	// todo
+ }
  
