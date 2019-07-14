@@ -59,3 +59,16 @@ PUBLIC int do_close()
 {
 	// todo
 }
+
+/**
+ * do_lseek()
+ *
+ * Handle the message LSEEK.
+ *
+ * @return The new offset in bytes from the beginning of the file if success, -1 otherwise.
+ *
+ */
+PUBLIC int do_lseek()
+{
+	// todo
+}
