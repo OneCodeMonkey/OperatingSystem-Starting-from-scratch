@@ -570,4 +570,21 @@ PUBLIC void dump_fd_graph(const char* fmt, ...)
 
 	printl("6");
 
+#if(LOG_MSG_SRC2DST == 1)
+	for(i = 0; i < msd_idx; i++) {
+		if(msd[i].dir == RECEIVING)
+			logbufpos += sprintf(logbuf + logbufpos, "\t\"proc%d\":f0 -> \"proc%d\":f0 [arrowhead=\"crow\", color=\"green\", label=\"%d\"];\n", \
+				msd[i].dst,
+				msd[i].src,
+				i);
+		else if(msd[i].dir == SENDING)
+			logbufpos += sprintf(logbuf + logbufpos, "\t\"proc%d\":f0 -> \"proc%d\":f0 [arrowhead=\"vee\", color=\"blue\", label=\"%d\"];\n", \
+				msd[i].src, \
+				msd[i].dst, \
+				i);
+		else
+			assert(0);
+	}
+#endif
+
 }
