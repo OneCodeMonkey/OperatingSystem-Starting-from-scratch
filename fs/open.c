@@ -17,3 +17,14 @@ PRIVATE int alloc_smap_bit(int dev, int nr_sects_to_alloc);
 PRIVATE struct inode* new_inode(int dev, int inode_nr, int start_sect);
 PRIVATE void new_dir_entry(struct inode* dir_inode, int inode_nr, char* filename);
 
+/**
+ * do_open()
+ *
+ * Open a file and return the file descriptor.
+ * @return File descriptor if success, -1 when error occurs.
+ *
+ */
+PUBLIC int do_open()
+{
+	// todo
+}
