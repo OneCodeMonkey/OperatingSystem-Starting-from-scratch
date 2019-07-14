@@ -28,3 +28,21 @@ PUBLIC int do_open()
 {
 	// todo
 }
+
+/**
+ * create_file()
+ *
+ * Create a file and return it's inode ptr.
+ *
+ * @param[in] path: The full path of the new file
+ * @param[in] flags: Attributes of the new file
+ * @return Ptr to i-node of the new file if success, otherwise return 0.
+ *
+ * @see open()
+ * @see do_open()
+ *
+ */
+PRIVATE struct inode* create_file(char* path, int flags)
+{
+	// todo
+}
