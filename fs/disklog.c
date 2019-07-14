@@ -593,6 +593,15 @@ PUBLIC void dump_fd_graph(const char* fmt, ...)
 			ppm[i].ppid, \
 			ppm[i].pid);
 	}
-#endif	
+#endif
+
+#if(LOG_ARROW_PROC_FD == 1)
+	for(i = 0; i < pfm_idx; i++) {
+		logbufpos += sprintf(logbuf + logbufpos, "\t\"proc%d\":f%d -> \"filedesc%d\":f3;\n", \
+			pfm[i].pid, \
+			pfm[i].filp, \
+			pfm[i].desc);
+	}
+#endif
 
 }
