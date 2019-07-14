@@ -86,3 +86,18 @@ PRIVATE int alloc_imap_bit(int dev)
 {
 	// todo
 }
+
+/**
+ * alloc_smap_bit()
+ *
+ * Allocate a bit in sector-map.
+ *
+ * @param dev: In which device the sector-map is located.
+ * @param nr_sects_to_alloc: How many sectors are allocated.
+ * @return I-node nr.
+ *
+ */
+PRIVATE int alloc_smap_bit(int dev, int nr_sects_to_alloc)
+{
+	// todo
+}
