@@ -101,3 +101,19 @@ PRIVATE int alloc_smap_bit(int dev, int nr_sects_to_alloc)
 {
 	// todo
 }
+
+/**
+ * new_inode()
+ *
+ * Generate a new i-node and write it to disk.
+ *
+ * @param dev: Home device of the i-node.
+ * @param inode_nr: I-node nr.
+ * @param start_sect: Start sector of the file pointed by the new i-node.
+ * @return Ptr of the new i-node.
+ *
+ */
+PRIVATE struct inode* new_inode(int dev, int inode_nr, int start_sect)
+{
+	// todo
+}
