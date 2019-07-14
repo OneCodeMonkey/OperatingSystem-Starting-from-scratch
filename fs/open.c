@@ -46,3 +46,16 @@ PRIVATE struct inode* create_file(char* path, int flags)
 {
 	// todo
 }
+
+/**
+ * do_close()
+ *
+ * Handle the message CLOSE.
+ *
+ * @return Zero if success.
+ *
+ */
+PUBLIC int do_close()
+{
+	// todo
+}
