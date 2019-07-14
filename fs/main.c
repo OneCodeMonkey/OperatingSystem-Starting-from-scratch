@@ -18,3 +18,14 @@ PRIVATE void mkfs();
 PRIVATE void read_super_block(int dev);
 PRIVATE int fs_fork();
 PRIVATE int fs_exit();
+
+/**
+ * task_fs()
+ *
+ * <Ring 1> The main loop of TASK FS.
+ *
+ */
+PUBLIC void task_fs()
+{
+	// todo
+}
