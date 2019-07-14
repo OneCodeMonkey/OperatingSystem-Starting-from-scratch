@@ -29,3 +29,14 @@ PUBLIC void task_fs()
 {
 	// todo
 }
+
+/**
+ * init_fs()
+ *
+ * <Ring 1> Do some preparation.
+ *
+ */
+PRIVATE void init_fs()
+{
+	// todo
+}
