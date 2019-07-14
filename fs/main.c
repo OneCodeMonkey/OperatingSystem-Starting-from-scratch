@@ -40,3 +40,21 @@ PRIVATE void init_fs()
 {
 	// todo
 }
+
+/**
+ * mkfs()
+ *
+ * <Ring 1> Make a available OS's FS in the disk. It will
+ *	   - Write a super block to sector 1.
+ * 	   - Create three special files: dev_tty0, dev_tty1, dev_tty2
+ *	   - Create a file cmd.tar
+ *     - Create the inode map
+ * 	   - Create the sector map
+ *	   - Create the inodes of the files
+ *	   - Create '/', the root directory
+ *
+ */
+PRIVATE void mkfs()
+{
+	// todo
+}
