@@ -527,4 +527,47 @@ PUBLIC void dump_fd_graph(const char* fmt, ...)
 
 	printl("5");
 
+#if(LOG_ROOT_DIR == 1)
+	logbufpos += sprintf(logbuf + logbufpos, "\n\tsubgraph cluster_6 {\n");
+	logbufpos += sprintf(logbuf + logbufpos, "\n\t\tstyle=filled;\n");
+	logbufpos += sprintf(logbuf + logbufpos, "\n\t\tcolor=lightgrey;\n");
+	sb = get_super_block(root_inode->i_dev);
+	int dir_blk0_nr = root_inode->i_start_sect;
+	int nr_dir_blks = (root_inode->i_size + SECTOR_SIZE - 1) / SECTOR_SIZE;
+	int nr_dir_entries = root_inode->i_size / DIR_ENTRY_SIZE;
+
+	int m = 0;
+	struct dir_entry* pde;
+
+	for(i = 0; i < nr_dir_blks; i++) {
+		DISKLOG_RD_SECT(root_inode->i_dev, dir_blk0_nr + i);
+		memcpy(_buf, logdiskbuf, SECTOR_SIZE);
+		pde = (struct dir_entry*)_buf;
+		for(j = 0; j < SECTOR_SIZE / DIR_ENTRY_SIZE; j++, pde++) {
+			if(pde->inode_nr) {
+				memcpy(filename, pde->name, MAX_FILENAME_LEN);
+				if(filename[0] == '.')
+					filename[0] = '/';
+				logbufpos += sprintf(logbuf + logbufpos, "\t\t\"rootdirent%d\" [\n", pde->inode_nr);
+				logbufpos += sprintf(logbuf + logbufpos, "\t\t\tlabel = \"<f0> %d|<f2> %s", \
+					pde->inode_nr, \
+					filename);
+				logbufpos += sprintf(logbuf + logbufpos, "\t\"\n");
+				logbufpos += sprintf(logbuf + logbufpos, "\t\t\tshape = \"record\"\n");
+				logbufpos += sprintf(logbuf + logbufpos, "\t\t];\n");
+				logbufpos += sprintf(logbuf + logbufpos, "\t\"inodearray%d\":f0 -> rootdirent%d\":f0;\n", \
+					pde->inode_nr, \
+					pde->inode_nr);
+			}
+		}
+		if(m > nr_dir_entries) 	/* all entries have been iterated */
+			break;
+	}
+
+	logbufpos += sprintf(logbuf + logbufpos, "\t\tlabel = \"root dir\";\n");
+	logbufpos += sprintf(logbuf + logbufpos, "\t}\n");
+#endif
+
+	printl("6");
+
 }
