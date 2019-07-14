@@ -612,4 +612,13 @@ PUBLIC void dump_fd_graph(const char* fmt, ...)
 	}
 #endif
 
+#if(LOG_ARROW_INODE_INODEARRAY == 1)
+	for(i = 0; i < NR_INODE; i++) {
+		if(inode_table[i].i_cnt != 0)
+			logbufpos += sprintf(logbuf + logbufpos, "\t\"inode%d\":f7 -> \"inodearray%d\":f0;\n", \
+				i, \
+				inode_table[i].i_num);
+	}
+#endif
+
 }
