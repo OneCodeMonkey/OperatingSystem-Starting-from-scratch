@@ -185,7 +185,7 @@ PUBLIC int do_close()
  */
 PUBLIC int do_lseek()
 {
-	// todo
+
 }
 
 /**
