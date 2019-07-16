@@ -118,7 +118,7 @@ PUBLIC void task_fs()
  */
 PRIVATE void init_fs()
 {
-	// todo
+
 }
 
 /**
