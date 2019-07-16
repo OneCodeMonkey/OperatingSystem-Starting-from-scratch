@@ -271,7 +271,7 @@ PRIVATE int alloc_imap_bit(int dev)
  */
 PRIVATE int alloc_smap_bit(int dev, int nr_sects_to_alloc)
 {
-	// todo
+
 }
 
 /**
