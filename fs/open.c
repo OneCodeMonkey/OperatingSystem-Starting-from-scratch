@@ -140,7 +140,18 @@ PUBLIC int do_open()
  */
 PRIVATE struct inode* create_file(char* path, int flags)
 {
-	
+	char filename[MAX_PATH];
+	struct inode* dir_inode;
+	if(strip_path(filename, path, &dir_inode) != 0)
+		return 0;
+
+	int inode_nr = alloc_imap_bit(dir_inode->i_dev);
+	int free_sect_nr = alloc_smap_bit(dir_inode->i_dev, NR_DEFAULT_FILE_SECTS);
+	struct inode* newino = new_inode(dir_inode->i_dev, inode_nr, free_sect_nr);
+
+	new_dir_entry(dir_inode, newino->i_num, filename);
+
+	return newino;
 }
 
 /**
