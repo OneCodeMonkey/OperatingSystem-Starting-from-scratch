@@ -176,7 +176,45 @@ PRIVATE void mkfs()
 
 	/* super block */
 	/* get the geometry of ROOTDEV */
-	
+	struct part_info geo;
+	driver_msg.type = DEV_IOCTL;
+	driver_msg.DEVICE = MINOR(ROOT_DEV);
+	driver_msg.REQUEST = DIOCTL_GET_GEO;
+	driver_msg.BUF = &geo;
+	driver_msg.PROC_NR = TASK_FS;
+	assert(dd_map[MAJOR(ROOT_DEV)].driver_nr != INVALID_DRIVER);
+	send_recv(BOTH, dd_map[MAJOR(ROOT_DEV)].driver_nr, &driver_msg);
+
+	printl("{FS} dev size: 0x%x sectors\n", geo.size);
+
+	int bits_per_sect = SECTOR_SIZE * 8;	/* 8 bits per byte */
+	struct super_block sb;			/* generate a super block */
+	sb.magic = MAGIC_V1;		/* 0x111 */
+	sb.nr_inodes = bits_per_sect;
+	sb.nr_inode_sects = sb.nr_inodes * INODE_SIZE / SECTOR_SIZE;
+	sb.nr_sects = geo.size;		/* partition size in sector */
+	sb.nr_imap_sects = 1;
+	sb.nr_smap_sects = sb.nr_sects / bits_per_sect + 1;
+	sb.n_1st_sect = 1 + 1 + sb.nr_imap_sects + sb.nr_smap_sects + sb.nr_inode_sects;
+	sb.root_inode = ROOT_INODE;
+	sb.inode_size = INODE_SIZE;
+
+	struct inode x;
+	sb.inode_isize_off = (int)&x.i_size - (int)&x;
+	sb.inode_start_off = (int)&x.i_start_sect - (int)&x;
+	sb.dir_ent_size = DIR_ENTRY_SIZE;
+
+	struct dir_entry de;
+	sb.dir_ent_inode_off = (int)&de.inode_nr - (int)&de;
+	sb.dir_ent_fname_off = (int)&de.name - (int)&de;
+
+	memset(fsbuf, 0x90, SECTOR_SIZE);
+	memcpy(fsbuf, &sb, SUPER_BLOCK_SIZE);
+
+	/* write the super block */
+	WR_SECT(ROOT_DEV, 1);
+
+	printl("{FS} devbase:0x%x00, sb:0x%x00, imap:0x%x00, ")
 }
 
 /**
