@@ -140,7 +140,7 @@ PUBLIC int do_open()
  */
 PRIVATE struct inode* create_file(char* path, int flags)
 {
-	// todo
+	
 }
 
 /**
