@@ -271,7 +271,50 @@ PRIVATE int alloc_imap_bit(int dev)
  */
 PRIVATE int alloc_smap_bit(int dev, int nr_sects_to_alloc)
 {
+	int i, \	/* sector index */
+	 j, \		/* byte index */
+	 k;			/* bit index */
 
+	struct super_block* sb = get_super_block(dev);
+
+	int smap_blk0_nr = 1 + 1 + sb->nr_imap_sects;
+	int free_sect_nr = 0;
+
+	for(i = 0; i < sb->nr_smap_sects; i++) {	/* smap_blk0_nr + i */
+		RD_SECT(dev, smap_blk0_nr + i);
+
+		/* byte offset in current sect */
+		for(j = 0; j < SECTOR_SIZE && nr_sects_to_alloc > 0; j++) {
+			k = 0;
+			if(!free_sect_nr) {
+				/* loop until a free bit is found */
+				if(fsbuf[j] == 0xFF)
+					continue;
+				for(; ((fsbuf[j] >> k) & 1) != 0; k++) {
+					//
+				}
+
+				free_sect_nr = (i * SECTOR_SIZE + j) * 8 + k - 1 + sb->n_1st_sect;
+			}
+
+			for(; k < 8; k++) {		/* repeat till enough bits are set */
+				assert(((fsbuf[j] >> k) & 1) == 0);
+				fsbuf[j] |= (1 << k);
+				if(--nr_sects_to_alloc == 0)
+					break;
+			}
+		}
+
+		if(free_sect_nr) {	/* free bit found, write the bits to smap */
+			WR_SECT(dev, smap_blk0_nr + i);
+		}
+
+		if(nr_sects_to_alloc == 0)
+			break;
+	}
+
+	assert(nr_sects_to_alloc == 0);
+	return free_sect_nr;
 }
 
 /**
