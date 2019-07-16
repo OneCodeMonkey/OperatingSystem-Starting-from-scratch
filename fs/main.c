@@ -27,7 +27,7 @@ PRIVATE int fs_exit();
  */
 PUBLIC void task_fs()
 {
-	// todo
+
 }
 
 /**
