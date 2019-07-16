@@ -224,7 +224,39 @@ PUBLIC int do_lseek()
  */
 PRIVATE int alloc_imap_bit(int dev)
 {
+	int inode_nr = 0;
+	int i, j, k;
 
+	int imap_blk0_nr = 1 + 1;	/* 1 boot sector and 1 super block */
+	struct super_block* sb = get_super_block(dev);
+
+	for(i = 0; i < sb->nr_imap_sects; i++) {
+		RD_SECT(dev, imap_blk0_nr + i);
+		for(j = 0; j < SECTOR_SIZE; j++) {
+			/* skip `11111111` bytes */
+			if(fsbuf[j] == 0xFF)
+				continue;
+			/* skip `1` bits */
+			for(k = 0; ((fsbuf[j] >> k) & 1) != 0; k++) {
+				//
+			}
+
+			/* i: sector index; j: byte index; k: bit index */
+			inode_nr = (i * SECTOR_SIZE + j) * 8 + k;
+			fsbuf[j] |= (1 << k);
+
+			/* write the bit to map */
+			WR_SECT(dev, imap_blk0_nr + i);
+			break;
+		}
+
+		return inode_nr;
+	}
+
+	/* no free bit in imap */
+	panic("inode-map is probably full.\n");
+
+	return 0;
 }
 
 /**
