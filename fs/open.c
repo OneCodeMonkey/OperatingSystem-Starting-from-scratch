@@ -26,7 +26,103 @@ PRIVATE void new_dir_entry(struct inode* dir_inode, int inode_nr, char* filename
  */
 PUBLIC int do_open()
 {
-	// todo
+	int fd = -1;	/* return value */
+
+	char pathname[MAX_PATH];
+
+	/* get parameters from the message */
+	int flags = fs_msg.FLAGS;			/* access mode */
+	int name_len = fs_msg.NAME_LEN;		/* length of filename*/
+	int src = fs_msg.source;			/* caller proc nr. */
+	assert(name_len < MAX_PATH);
+	phys_copy((void*)va2la(TASK_FS, pathname), (void*)va2la(src, fs_msg.PATHNAME), name_len);
+	pathname[name_len] = 0;
+
+	/* find a free slot in PROCESS::filp[] */
+	int i;
+	for(i = 0; i < NR_FILES; i++) {
+		if(pcaller->filp[i] == 0) {
+			fd = i;
+			break;
+		}
+	}
+	if((fd < 0) || (fd >= NR_FILES))
+		panic("filp[] is full (PID:%d", proc2pid(pcaller));
+
+	/* find a free slot in f_desc_table[] */
+	for(i = 0; i < NR_FILES_DESC; i++) {
+		if(f_desc_table[i].fd_inode == 0)
+			break;
+	}
+	if(i >= NR_FILES_DESC)
+		panic("f_desc_table[] is full (PID:%d)", proc2pid(pcaller));
+
+	int inode_nr = search_file(pathname);
+	struct inode* pin = 0;
+
+	if(inode_nr == INVALID_INODE) {		/* file not exists */
+		if(flags & O_CREAT)
+			pin = create_file(pathname, flags);
+		else {
+			printl("{FS} file not exists: %s\n", pathname);
+			return -1;
+		}
+	} else if(flags & O_CREAT) {		/* file exists */
+		if((flags & O_CREAT) && (!(flags & O_TRUNC))) {
+			assert(flags == (O_RDWD | O_CREAT));
+			printl("{FS} file exists: %s\n", pathname);
+			return -1;
+		}
+
+		assert((flags == O_RDWD) || (flags == (O_RDWD | O_TRUNC)) || (flags == (O_RDWD | O_TRUNC | O_CREAT)));
+
+		char filename[MAX_PATH];
+		struct inode* dir_inode;
+		if(strip_path(filename, pathname, &dir_inode) != 0)
+			return -1;
+
+		pin = get_inode(dir_inode->i_dev, inode_nr);
+	} else {
+		printl("{FS} file exists: %s\n", pathname);
+		return -1;
+	}
+
+	if(flags & O_TRUNC) {
+		assert(pin);
+		pin->i_size = 0;
+		sync_inode(pin);
+	}
+
+	if(pin) {
+		/* connects proc with file_descriptor */
+		pcaller->filp[fd] = &f_desc_table[i];
+
+		/* connects file_descriptor with inode */
+		f_desc_table[i].fd_inode = pin;
+
+		f_desc_table[i].fd_mode = flags;
+		f_desc_table[i].fd_cnt = 1;
+		f_desc_table[i].fd_pos = 0;
+
+		int imode = pin->i_mode & I_TYPE_MASK;
+
+		if(imode == I_CHAR_SPECIAL) {
+			MESSAGE driver_msg;
+			driver_msg.type = DEV_OPEN;
+			int dev = pin->i_start_sect;
+			driver_msg.DEVICE = MINOR(dev);
+			assert(MAJOR(dev) == 4);
+			assert(dd_map[MAJOR(dev)].driver_nr != INVALID_DRIVER);
+
+			send_recv(BOTH, dd_map[MAJOR(dev)].driver_nr, &driver_msg);
+		} else if(imode == I_DIRECTORY)
+			assert(pin->i_num == ROOT_INODE);
+		else
+			assert(pin->i_mode == I_REGULAR);
+	} else
+		return -1;
+
+	return fd;
 }
 
 /**
