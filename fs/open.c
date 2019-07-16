@@ -224,7 +224,7 @@ PUBLIC int do_lseek()
  */
 PRIVATE int alloc_imap_bit(int dev)
 {
-	// todo
+
 }
 
 /**
