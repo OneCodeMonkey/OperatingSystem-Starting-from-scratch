@@ -171,7 +171,7 @@ PRIVATE void init_fs()
  */
 PRIVATE void mkfs()
 {
-	// todo
+
 }
 
 /**
