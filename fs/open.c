@@ -164,7 +164,7 @@ PRIVATE struct inode* create_file(char* path, int flags)
  */
 PUBLIC int do_close()
 {
-	// todo
+
 }
 
 /**
