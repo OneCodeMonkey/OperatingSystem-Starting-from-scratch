@@ -330,7 +330,20 @@ PRIVATE int alloc_smap_bit(int dev, int nr_sects_to_alloc)
  */
 PRIVATE struct inode* new_inode(int dev, int inode_nr, int start_sect)
 {
-	// todo
+	struct inode* new_inode = get_inode(dev, inode_nr);
+
+	new_inode->i_mode = I_REGULAR;
+	new_inode->i_size = 0;
+	new_inode->i_start_sect = start_sect;
+	new_inode->i_nr_sects = NR_DEFAULT_FILE_SECTS;
+	new_inode->i_dev = dev;
+	new_inode->i_cnt = 1;
+	new_inode->i_num = inode_nr;
+
+	/* write to the inode array */
+	sync_inode(new_inode);
+
+	return new_inode;
 }
 
 /**
