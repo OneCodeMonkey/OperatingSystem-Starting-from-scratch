@@ -171,7 +171,12 @@ PRIVATE void init_fs()
  */
 PRIVATE void mkfs()
 {
+	MESSAGE driver_msg;
+	int i, j;
 
+	/* super block */
+	/* get the geometry of ROOTDEV */
+	
 }
 
 /**
