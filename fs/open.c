@@ -358,5 +358,43 @@ PRIVATE struct inode* new_inode(int dev, int inode_nr, int start_sect)
  */
 PRIVATE void new_dir_entry(struct inode* dir_inode, int inode_nr, char* filename)
 {
-	// todo
+	/* write the dir_entry */
+	int dir_blk0_nr = dir_inode->i_start_sect;
+	int nr_dir_blks = (dir_inode->i_size + SECTOR_SIZE) / SECTOR_SIZE;
+	int nr_dir_entries = dir_inode->i_size / DIR_ENTRY_SIZE;	/* including unused slots(the file has been deleted but the slot is still there) */
+
+	int m = 0;
+	struct dir_entry* pde;
+	struct dir_entry* new_de = 0;
+
+	int i, j;
+	for(i = 0; i < nr_dir_blks; i++) {
+		RD_SECT(dir_inode->i_dev, dir_blk0_nr + i);
+		pde = (struct dir_entry*)fsbuf;
+		for(j = 0; j < SECTOR_SIZE / DIR_ENTRY_SIZE; j++, pde++) {
+			if(++m > nr_dir_entries)
+				break;
+			if(pde->inode_nr == 0) {	/* it's a free slot */
+				new_de = pde;
+				break;
+			}
+		}
+
+		if(m > nr_dir_entries || new_de)
+			break;
+	}
+
+	if(!new_de) {
+		new_de = pde;
+		dir_inode->i_size += DIR_ENTRY_SIZE;
+	}
+
+	new_de->inode_nr = inode_nr;
+	strcpy(new_de->name, filename);
+
+	/* write dir block -- ROOT dir block */
+	WR_SECT(dir_inode->i_dev, dir_blk0_nr + i);
+
+	/* update dir inode */
+	sync_inode(dir_inode);
 }
