@@ -320,7 +320,7 @@ PRIVATE void mkfs()
 		pde->inode_nr = i + 2;	/* dev_tty0's inode_nr is 2 */
 		sprintf(pde->name, "dev_tty%d", i);
 	}
-	
+
 	(++pde)->inode_nr = NR_CONSOLES + 2;
 	sprintf(pde->name, "cmd.tar", i);
 	WR_SECT(ROOT_DEV, sb.n_1st_sect);
@@ -342,7 +342,7 @@ PRIVATE void mkfs()
  */
 PUBLIC int rw_sector(int io_type, int dev, u64 pos, int bytes, int proc_nr, void* buf)
 {
-	// todo
+
 }
 
 /**
