@@ -403,7 +403,14 @@ PRIVATE void read_super_block(int dev)
  */
 PUBLIC struct super_block* get_super_block(int dev)
 {
-	// todo
+	struct super_block* sb = super_block;
+	for(; sb < &super_block[NR_SUPER_BLOCK]; sb++)
+		if(sb->sb_dev == dev)
+			return sb;
+
+	panic("super block of device %d not found.\n", dev);
+
+	return 0;
 }
 
 /**
