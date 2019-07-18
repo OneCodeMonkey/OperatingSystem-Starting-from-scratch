@@ -535,5 +535,5 @@ PRIVATE int fs_fork()
  */
 PRIVATE int fs_exit()
 {
-	// todo
+
 }
