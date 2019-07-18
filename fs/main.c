@@ -535,5 +535,20 @@ PRIVATE int fs_fork()
  */
 PRIVATE int fs_exit()
 {
+	int i;
+	struct proc* p = &proc_table[fs_msg.PID];
+	for(i = 0; i < NR_FILES; i++) {
+		if(p->filp[i]) {
+			/* release the inode */
+			p->filp[i]->fd_inode->i_cnt--;
+			/* release the file desc slot */
+			if(--p->filp[i]->fd_cnt == 0)
+				p->filp[i]->fd_inode = 0;
 
+			p->filp[i] = 0;
+		}
+	}
+
+	return 0;
 }
+
