@@ -427,7 +427,40 @@ PUBLIC struct super_block* get_super_block(int dev)
  */
 PUBLIC struct inode* get_inode(int dev, int num)
 {
+	if(num == 0)
+		return 0;
+	struct inode* p;
+	struct inode* q = 0;
+	for(p = &inode_table[0]; p < &inode_table[NR_INODE]; p++) {
+		if(p->i_cnt) {		/* not a free slot */
+			if((p->i_dev == dev) && (p->i_num == num)) {
+				/* this is the inode we want */
+				p->i_cnt++;
+				return p;
+			}
+		} else {	/* is a free slot */
+			if(!q)
+				q = p;	/* q <- the 1st free slot */
+		}
+	}
 
+	if(!q)
+		panic("the inode table is full");
+
+	q->i_dev = dev;
+	q->i_num = num;
+	q->i_cnt = 1;
+
+	struct super_block* sb = get_super_block(dev);
+	int blk_nr = 1 + 1 + sb->nr_imap_sects + sb->nr_smap_sects + ((num - 1) / (SECTOR_SIZE / INODE_SIZE));
+	RD_SECT(dev, blk_nr);
+	struct inode* pinode = (struct inode*)((u8*)fsbuf + ((num - 1) % (SECTOR_SIZE / INODE_SIZE)) * INODE_SIZE);
+	q->i_mode = pinode->i_mode;
+	q->i_size = pinode->i_size;
+	q->i_start_sect = pinode->i_start_sect;
+	q->i_nr_sects = pinode->i_nr_sects;
+
+	return q;
 }
 
 /**
