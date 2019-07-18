@@ -513,7 +513,16 @@ PUBLIC void sync_inode(struct inode* p)
  */
 PRIVATE int fs_fork()
 {
-	// todo
+	int i;
+	struct proc* child = &proc_table[fs_msg.PID];
+	for(i = 0; i < NR_FILES; i++) {
+		if(child->filp[i]) {
+			child->filp[i]->fd_cnt++;
+			child->filp[i]->fd_inode->i_cnt++;
+		}
+	}
+
+	return 0;
 }
 
 /**
