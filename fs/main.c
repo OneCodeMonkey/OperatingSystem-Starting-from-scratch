@@ -427,7 +427,7 @@ PUBLIC struct super_block* get_super_block(int dev)
  */
 PUBLIC struct inode* get_inode(int dev, int num)
 {
-	// todo
+
 }
 
 /**
