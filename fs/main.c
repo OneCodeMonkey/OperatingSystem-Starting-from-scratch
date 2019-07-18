@@ -474,7 +474,9 @@ PUBLIC struct inode* get_inode(int dev, int num)
  */
 PUBLIC void put_inode(struct inode* pinode)
 {
-	// todo
+	assert(pinode->i_cnt > 0);
+
+	pinode->i_cnt--;
 }
 
 /**
