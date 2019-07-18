@@ -366,7 +366,7 @@ PUBLIC int rw_sector(int io_type, int dev, u64 pos, int bytes, int proc_nr, void
  */
 PRIVATE void read_super_block(int dev)
 {
-	// todo
+
 }
 
 /**
