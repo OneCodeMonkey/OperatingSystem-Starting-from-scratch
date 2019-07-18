@@ -489,7 +489,7 @@ PUBLIC void put_inode(struct inode* pinode)
  */
 PUBLIC void sync_inode(struct inode* p)
 {
-	// todo
+
 }
 
 /**
