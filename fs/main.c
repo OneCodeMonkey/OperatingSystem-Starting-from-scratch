@@ -489,7 +489,18 @@ PUBLIC void put_inode(struct inode* pinode)
  */
 PUBLIC void sync_inode(struct inode* p)
 {
+	struct inode* pinode;
+	struct super_block* sb = get_super_block(p->i_dev);
+	int blk_nr = 1 + 1 + sb->nr_imap_sects + sb->nr_smap_sects + ((p->i_num - 1) / (SECTOR_SIZE / INODE_SIZE));
+	RD_SECT(p->i_dev, blk_nr);
+	pinode = (struct inode*)((u8*)fsbuf + (((p->i_num - 1) % (SECTOR_SIZE / INODE_SIZE)) * INODE_SIZE));
 
+	pinode->i_mode = p->i_mode;
+	pinode->i_size = p->i_size;
+	pinode->i_start_sect = p->i_start_sect;
+	pinode->i_nr_sects = p->i_nr_sects;
+
+	WR_SECT(p->i_dev, blk_nr);
 }
 
 /**
